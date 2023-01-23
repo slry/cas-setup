@@ -1,0 +1,54 @@
+all:
+  hosts:
+    cas-server:
+      # Address or hostname of the server
+      ansible_host: 0.0.0.0
+      # root or user with sudo privileges
+      ansible_user: root
+
+      schema: http # http or https
+      domain: example.org                     # Domain or IP of the server
+      email: ""                               # Email for Let's Encrypt
+
+
+      # Name of the Docker network
+      docker_network: casnet
+
+      #
+      # Services settings
+      # *_directory       the directory where the service's data are stored
+      # *_path            path from which the service is accessible (e.g. /gitlab means that the Gitlab instance is at domain.org/gitlab)
+      #
+
+      nginx_directory: /cas/nginx
+
+      gitlab_directory: /cas/gitlab
+      gitlab_path: /gitlab
+      gitlab_ssh_port: 2222
+
+      sonarqube_directory: /cas/sonarqube
+      sonarqube_path: /sonarqube
+
+      mattermost_directory: /cas/mattermost
+      mattermost_path: /mattermost
+      mattermost_calls_port: 8045
+
+      jenkins_directory: /cas/jenkins
+      jenkins_path: /jenkins
+
+      taiga_directory: /cas/taiga
+      taiga_path: /taiga
+      # For Gitlab SSO
+      taiga_gitlab_clientid: ""
+      taiga_gitlab_clientsecret: ""
+
+
+      #
+      # Backup settings
+      #
+      
+      backup_directory: /cas/backup
+      # Cron format
+      backup_weekday: "6"
+      backup_minute: "00"
+      backup_hour: "3"

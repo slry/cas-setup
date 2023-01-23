@@ -1,0 +1,44 @@
+version: "3.5"
+
+services:
+  jenkins:
+    image: jenkins/jenkins:latest
+    container_name: cas-jenkins
+    hostname: jenkins
+    restart: unless-stopped
+    expose:
+      - 8080
+    depends_on:
+      - jenkins-dind
+    volumes:
+      - {{ jenkins_directory }}/home:/var/jenkins_home
+      - {{ jenkins_directory }}/certs:/certs/client:ro
+    environment:
+      - DOCKER_HOST=tcp://jenkins-dind:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+      - JENKINS_OPTS="--prefix={{ jenkins_path }}"
+    networks:
+      - cas-network
+
+  jenkins-dind:
+    image: docker:dind
+    container_name: cas-jenkins-dind
+    hostname: jenkins-dind
+    restart: unless-stopped
+    privileged: true
+    expose:
+      - 2376
+    volumes:
+      - {{ jenkins_directory }}/certs:/certs/client
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    command:
+      - --storage-driver=overlay2
+    networks:
+      - cas-network
+
+networks:
+  cas-network:
+    external: true
+    name: {{ docker_network }}

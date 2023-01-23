@@ -1,0 +1,189 @@
+events {
+    worker_connections 768;
+}
+
+
+http {
+
+    sendfile on;
+    tcp_nopush on;
+    types_hash_max_size 2048;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    gzip on;
+
+    # Required for Jenkins websocket agents
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+    }
+
+
+{% if certbot_step is defined and certbot_step >= 2 %}
+    # Redirect from HTTP to HTTPS
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name {{ domain }};
+
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+{% endif %}
+
+
+    server {
+        server_name {{ domain }};
+
+{% if certbot_step is defined and certbot_step >= 2 %}
+        listen 443 default_server ssl http2;
+        listen [::]:443 ssl http2;
+        ssl_certificate /etc/nginx/ssl/live/{{ domain }}/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/live/{{ domain }}/privkey.pem;
+{% else %}
+        listen 80 default_server;
+        listen [::]:80 default_server;
+{% endif %}
+
+{% if certbot_step is defined and certbot_step >= 1 %}
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+{% endif %}
+
+        # Use Docker DNS
+        resolver 127.0.0.11 valid=10s;
+
+        location / {
+            autoindex on;
+            root  /var/www/html/dashboard;
+        }
+
+        set $gitlab_upstream "gitlab";
+        set $sonarqube_upstream "sonarqube:9000";
+        set $mattermost_upstream "mattermost:8065";
+        set $jenkins_upstream "jenkins:8080";
+        set $taiga_upstream "taiga";
+
+        location {{ gitlab_path }} {
+            proxy_pass http://$gitlab_upstream;
+            proxy_set_header        X-Real-IP               $remote_addr;
+            proxy_set_header        X-Forwarded-For         $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto       $scheme;
+            proxy_set_header        X-Frame-Options         SAMEORIGIN;
+            proxy_set_header        Host                    $host;
+            
+            proxy_read_timeout      300;
+            proxy_connect_timeout   300;
+            proxy_redirect          off;
+            client_max_body_size 50m;
+        }
+
+        location {{ sonarqube_path }} {
+            proxy_pass	http://$sonarqube_upstream{{ sonarqube_path }};	
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Scheme $scheme;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_redirect off;
+        }
+
+        location {{ mattermost_path }} {
+            proxy_pass http://$mattermost_upstream;	
+            client_max_body_size 50M;
+            proxy_set_header Connection "";
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Ssl 'on';
+            proxy_set_header X-Frame-Options SAMEORIGIN;
+            proxy_buffers 256 16k;
+            proxy_buffer_size 16k;
+            proxy_read_timeout 600s;
+            proxy_http_version 1.1;
+        }
+        location ~ {{ mattermost_path }}/api/v[0-9]+/(users/)?websocket$ {
+            proxy_pass http://$mattermost_upstream;	
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            client_max_body_size 50M;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Ssl 'on';
+            proxy_set_header X-Frame-Options SAMEORIGIN;
+            proxy_buffers 256 16k;
+            proxy_buffer_size 16k;
+            client_body_timeout 60;
+            send_timeout 300;
+            lingering_timeout 5;
+            proxy_connect_timeout 90;
+            proxy_send_timeout 300;
+            proxy_read_timeout 90s;
+            proxy_http_version 1.1;
+        }
+
+        location {{ jenkins_path }} {
+            proxy_pass         http://$jenkins_upstream;
+            sendfile off;
+            proxy_http_version 1.1;
+
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Scheme $scheme;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            # Required for Jenkins websocket agents
+            proxy_set_header   Connection        $connection_upgrade;
+            proxy_set_header   Upgrade           $http_upgrade;
+
+            proxy_set_header   Host              $host;
+            proxy_set_header   X-Real-IP         $remote_addr;
+            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+            proxy_max_temp_file_size 0;
+
+            #this is the maximum upload size
+            client_max_body_size       10m;
+            client_body_buffer_size    128k;
+
+            proxy_connect_timeout      90;
+            proxy_send_timeout         90;
+            proxy_read_timeout         90;
+            proxy_buffering            off;
+            proxy_request_buffering    off; # Required for HTTP CLI commands
+            proxy_set_header Connection ""; # Clear for keepalive
+        }
+
+        location {{ taiga_path }}/ {
+            proxy_pass http://$taiga_upstream/;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Scheme $scheme;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_redirect off;
+            client_max_body_size 100M;
+        }
+        location {{ taiga_path }}/events {
+            proxy_pass http://$taiga_upstream/events;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_connect_timeout 7d;
+            proxy_send_timeout 7d;
+            proxy_read_timeout 7d;
+        }
+
+    }
+
+}

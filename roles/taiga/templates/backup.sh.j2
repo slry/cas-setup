@@ -1,0 +1,24 @@
+#! /bin/bash
+
+working_dir=/tmp/casbackup/taiga
+mkdir -p $working_dir
+mkdir -p {{backup_directory}}/taiga
+
+# DB
+sudo docker exec cas-taiga-db pg_dump -U taiga taiga > "$working_dir/taiga-db-backup.sql"
+
+# Media
+sudo docker exec cas-taiga-back tar czf taiga-media-backup.tar.gz media
+sudo docker cp cas-taiga-back:/taiga-back/taiga-media-backup.tar.gz "$working_dir/taiga-media-backup.tag.gz"
+
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+tar_name="taiga_${timestamp}.tar.gz"
+cd $working_dir
+tar -czf {{backup_directory}}/taiga/$tar_name ../taiga
+
+# Cleaning
+rm -rf $working_dir
+sudo docker exec cas-taiga-back rm taiga-media-backup.tar.gz
+
+# Cleaning old backups
+find {{backup_directory}}/taiga -mindepth 1 -mtime +7 -delete

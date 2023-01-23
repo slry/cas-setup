@@ -1,0 +1,56 @@
+- name: Create Mattermost directory
+  become: true
+  file:
+    path: "{{ mattermost_directory }}"
+    owner: 2000
+    group: 2000
+    state: directory
+    mode: '0770'
+
+- name: Create required directories
+  become: true
+  file:
+    path: "{{ item }}"
+    owner: 2000
+    group: 2000
+    state: directory
+    mode: '0770'
+  loop:
+    - "{{ mattermost_directory }}/config"
+    - "{{ mattermost_directory }}/data"
+    - "{{ mattermost_directory }}/logs"
+    - "{{ mattermost_directory }}/plugins"
+    - "{{ mattermost_directory }}/plugins"
+    - "{{ mattermost_directory }}/bleve-indexes"
+
+- name: Copy docker-compose
+  become: true
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ mattermost_directory }}/docker-compose.yml"
+    owner: root
+    mode: '0700'
+
+- name: Docker compose up
+  become: true
+  community.docker.docker_compose:
+    project_src: "{{ mattermost_directory }}"
+    remove_orphans: true
+
+  
+- name: Copy backup script
+  become: true
+  template:
+    src: backup.sh.j2
+    dest: "{{ mattermost_directory }}/backup.sh"
+    mode: '0770'
+
+- name: Backup cron
+  become: true
+  ansible.builtin.cron:
+    name: Mattermost backup
+    weekday: "{{ backup_weekday }}"
+    minute: "{{ backup_minute }}"
+    hour: "{{ backup_hour }}"
+    user: root
+    job: "{{ mattermost_directory }}/backup.sh"

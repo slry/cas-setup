@@ -1,0 +1,36 @@
+version: "3.5"
+ 
+services:
+  nginx:
+    image: nginx:latest
+    container_name: cas-nginx
+    hostname: nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - {{ nginx_directory }}/nginx.conf:/etc/nginx/nginx.conf
+      - {{ nginx_directory }}/public/:/var/www/html/dashboard/:ro
+{% if schema == 'https' %}
+      - {{ nginx_directory }}/certbot/www/:/var/www/certbot/:ro
+      - {{ nginx_directory }}/certbot/conf/:/etc/nginx/ssl/:ro
+{% endif %}
+    networks:
+      - cas-network
+ 
+{% if schema == 'https' %}
+  certbot:
+    image: certbot/certbot:latest
+    container_name: cas-certbot
+    volumes:
+      - {{ nginx_directory }}/certbot/www/:/var/www/certbot/:rw
+      - {{ nginx_directory }}/certbot/conf/:/etc/letsencrypt/:rw
+    networks:
+      - cas-network
+{% endif %}
+ 
+networks:
+  cas-network:
+    external: true
+    name: {{ docker_network }}

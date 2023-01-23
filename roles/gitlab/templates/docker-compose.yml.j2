@@ -1,0 +1,32 @@
+version: "3.5"
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: cas-gitlab
+    hostname: gitlab
+    restart: unless-stopped
+    
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url '{{schema}}://{{domain}}{{gitlab_path}}'
+        # Add any other gitlab.rb configuration here, each on its own line
+        letsencrypt['enable'] = false
+        nginx['listen_https'] = false
+        nginx['redirect_http_to_https'] = false
+    expose:
+      - 80
+    ports:
+      - {{ gitlab_ssh_port }}:22
+    volumes:
+      - {{ gitlab_directory }}/config:/etc/gitlab
+      - {{ gitlab_directory }}/logs:/var/log/gitlab
+      - {{ gitlab_directory }}/data:/var/opt/gitlab
+    shm_size: 256m
+    networks:
+      - cas-network
+
+networks:
+  cas-network:
+    external: true
+    name: {{ docker_network }}

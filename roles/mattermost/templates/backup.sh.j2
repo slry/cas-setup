@@ -1,0 +1,22 @@
+#! /bin/bash
+
+working_dir=/tmp/casbackup/mattermost
+mkdir -p $working_dir
+mkdir -p {{backup_directory}}/mattermost
+
+# DB
+sudo docker exec cas-mattermost-db pg_dump -U mattermost mattermost > "$working_dir/mattermost-db-backup.sql"
+
+# Volumes
+sudo cp -r {{ mattermost_directory }} "${working_dir}/."
+
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+tar_name="mattermost_${timestamp}.tar.gz"
+cd $working_dir
+tar -czf {{backup_directory}}/mattermost/$tar_name ../mattermost
+
+# Cleaning
+rm -rf $working_dir
+
+# Cleaning old backups
+find {{backup_directory}}/mattermost -mindepth 1 -mtime +7 -delete

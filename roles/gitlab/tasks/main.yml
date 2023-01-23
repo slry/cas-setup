@@ -1,0 +1,48 @@
+- name: Create Gitlab directory
+  become: true
+  file:
+    path: "{{ gitlab_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Create required directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ gitlab_directory }}/config"
+    - "{{ gitlab_directory }}/logs"
+    - "{{ gitlab_directory }}/data"
+
+- name: Copy docker-compose
+  become: true
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ gitlab_directory }}/docker-compose.yml"
+    owner: root
+    mode: '0700'
+
+- name: Docker compose up
+  become: true
+  community.docker.docker_compose:
+    project_src: "{{ gitlab_directory }}"
+    remove_orphans: true
+
+  
+- name: Copy backup script
+  become: true
+  template:
+    src: backup.sh.j2
+    dest: "{{ gitlab_directory }}/backup.sh"
+    mode: '0770'
+
+- name: Backup cron
+  become: true
+  ansible.builtin.cron:
+    name: Gitlab backup
+    weekday: "{{ backup_weekday }}"
+    minute: "{{ backup_minute }}"
+    hour: "{{ backup_hour }}"
+    user: root
+    job: "{{ gitlab_directory }}/backup.sh"

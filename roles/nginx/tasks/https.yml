@@ -1,0 +1,60 @@
+- name: Check if a certificate already exists
+  block:
+    - stat:
+        path: "{{ nginx_directory }}/certbot/conf/live/{{ domain }}/privkey.pem"
+      become: true
+      register: stat_privkey
+    - stat:
+        path: "{{ nginx_directory }}/certbot/conf/live/{{ domain }}/fullchain.pem"
+      become: true
+      register: stat_fullchain
+
+- name: Create a new certificate
+  block:
+    - name: Update nginx configuration with /.well-known/acme-challenge/
+      become: true
+      template:
+        src: nginx.conf.j2
+        dest: "{{ nginx_directory }}/nginx.conf"
+        owner: root
+        mode: '0770'
+      vars:
+        certbot_step: 1
+
+    - name: Restart nginx
+      become: true
+      community.docker.docker_compose:
+        project_src: "{{ nginx_directory }}"
+        restarted: true
+
+    - name: Request a certificate
+      become: true
+      command: docker compose -f "{{ nginx_directory }}/docker-compose.yml" run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ --non-interactive --email {{ email }} -d {{ domain }} --agree-tos
+  when: not stat_privkey.stat.exists or not stat_fullchain.stat.exists
+
+- name: Add certificates to nginx
+  block:
+    - name: Update nginx configuration with the certificates
+      become: true
+      template:
+        src: nginx.conf.j2
+        dest: "{{ nginx_directory }}/nginx.conf"
+        owner: root
+        mode: '0770'
+      vars:
+        certbot_step: 2
+
+    - name: Restart nginx
+      become: true
+      community.docker.docker_compose:
+        project_src: "{{ nginx_directory }}"
+        restarted: true
+
+    - name: Renew cron
+      become: true
+      ansible.builtin.cron:
+        name: "Renew CAS Let's Encrypt"
+        minute: "0"
+        hour: "0"
+        day: "1"
+        job: "docker compose -f '{{ nginx_directory }}/docker-compose.yml' run --rm  certbot renew"

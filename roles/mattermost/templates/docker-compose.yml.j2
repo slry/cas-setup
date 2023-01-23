@@ -1,0 +1,54 @@
+version: "3.5"
+
+services:
+  mattermost:
+    image: mattermost/mattermost-team-edition:latest
+    container_name: cas-mattermost
+    hostname: mattermost
+    restart: unless-stopped
+    expose:
+      - 8065
+    ports:
+      - {{ mattermost_calls_port }}:8045/udp
+    depends_on:
+      - mattermost-db
+    tmpfs:
+      - /tmp
+    volumes:
+      - {{ mattermost_directory }}:/mattermost/config:rw
+      - {{ mattermost_directory }}:/mattermost/data:rw
+      - {{ mattermost_directory }}:/mattermost/logs:rw
+      - {{ mattermost_directory }}:/mattermost/plugins:rw
+      - {{ mattermost_directory }}:/mattermost/client/plugins:rw
+      - {{ mattermost_directory }}:/mattermost/bleve-indexes:rw
+    environment:
+      - TZ=UTC
+      - MM_SQLSETTINGS_DRIVERNAME=postgres
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mattermost:{{ lookup('ansible.builtin.password', '.secrets/mattermost-db') }}@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10
+      - MM_BLEVESETTINGS_INDEXDIR={{ mattermost_directory }}/bleve-indexes
+      - MM_SERVICESETTINGS_SITEURL={{schema}}://{{domain}}{{mattermost_path}}
+    networks:
+      - cas-network
+
+  mattermost-db:
+    image: postgres:15
+    container_name: cas-mattermost-db
+    hostname: mattermost-db
+    restart: unless-stopped
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    volumes:
+      - {{ mattermost_directory }}/postgres_data:/var/lib/postgresql/data
+    environment:
+      - TZ=UTC
+      - POSTGRES_USER=mattermost
+      - POSTGRES_PASSWORD={{ lookup('ansible.builtin.password', '.secrets/mattermost-db') }}
+      - POSTGRES_DB=mattermost
+    networks:
+      - cas-network
+
+networks:
+  cas-network:
+    external: true
+    name: {{ docker_network }}

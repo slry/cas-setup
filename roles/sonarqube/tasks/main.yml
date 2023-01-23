@@ -1,0 +1,57 @@
+- name: Create Sonarqube directory
+  become: true
+  file:
+    path: "{{ sonarqube_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Create required directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ sonarqube_directory }}/data"
+    - "{{ sonarqube_directory }}/extensions"
+    - "{{ sonarqube_directory }}/logs"
+    - "{{ sonarqube_directory }}/postgresql"
+    - "{{ sonarqube_directory }}/postgresql_data"
+
+- name: Set vm.max_map_count
+  become: true
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: 262144
+    sysctl_set: yes
+
+- name: Copy docker-compose
+  become: true
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ sonarqube_directory }}/docker-compose.yml"
+    owner: root
+    mode: '0700'
+
+- name: Docker compose up
+  become: true
+  community.docker.docker_compose:
+    project_src: "{{ sonarqube_directory }}"
+    remove_orphans: true
+
+
+- name: Copy backup script
+  become: true
+  template:
+    src: backup.sh.j2
+    dest: "{{ sonarqube_directory }}/backup.sh"
+    mode: '0770'
+
+- name: Backup cron
+  become: true
+  ansible.builtin.cron:
+    name: Sonarqube backup
+    weekday: "{{ backup_weekday }}"
+    minute: "{{ backup_minute }}"
+    hour: "{{ backup_hour }}"
+    user: root
+    job: "{{ sonarqube_directory }}/backup.sh"

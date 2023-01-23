@@ -1,0 +1,28 @@
+#! /bin/bash
+
+working_dir=/tmp/casbackup/gitlab
+mkdir -p $working_dir
+mkdir -p {{backup_directory}}/gitlab
+
+# DB
+sudo docker exec -t cas-gitlab gitlab-backup create
+sudo docker cp cas-gitlab:/var/opt/gitlab/backups/ ${working_dir}
+
+# Secret keys
+sudo docker cp cas-gitlab:/etc/gitlab/gitlab.rb $working_dir
+sudo docker cp cas-gitlab:/etc/gitlab/gitlab-secrets.json $working_dir
+ 
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+tar_name="gitlab_${timestamp}.tar.gz"
+cd $working_dir
+tar -czf {{backup_directory}}/gitlab/$tar_name ../gitlab
+
+secret_name="gitlabsecret_${timestamp}.json"
+mv $working_dir/gitlab-secrets.json {{backup_directory}}/gitlab/$secret_name
+
+# Cleaning
+rm -rf $working_dir
+sudo docker exec -t cas-gitlab sh -c "rm /var/opt/gitlab/backups/*"
+
+# Cleaning old backups
+find {{backup_directory}}/gitlab -mindepth 1 -mtime +7 -delete

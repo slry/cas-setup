@@ -1,0 +1,52 @@
+- name: Create Jenkins directory
+  become: true
+  file:
+    path: "{{ jenkins_directory }}"
+    owner: 1000
+    group: 1000
+    state: directory
+    mode: '0770'
+
+- name: Create required directories
+  become: true
+  file:
+    path: "{{ item }}"
+    owner: 1000
+    group: 1000
+    state: directory
+    mode: '0770'
+  loop:
+    - "{{ jenkins_directory }}/home"
+    - "{{ jenkins_directory }}/certs"
+
+- name: Copy docker-compose
+  become: true
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ jenkins_directory }}/docker-compose.yml"
+    owner: root
+    mode: '0700'
+
+- name: Docker compose up
+  become: true
+  community.docker.docker_compose:
+    project_src: "{{ jenkins_directory }}"
+    remove_orphans: true
+
+  
+- name: Copy backup script
+  become: true
+  template:
+    src: backup.sh.j2
+    dest: "{{ jenkins_directory }}/backup.sh"
+    mode: '0770'
+
+- name: Backup cron
+  become: true
+  ansible.builtin.cron:
+    name: Jenkins backup
+    weekday: "{{ backup_weekday }}"
+    minute: "{{ backup_minute }}"
+    hour: "{{ backup_hour }}"
+    user: root
+    job: "{{ jenkins_directory }}/backup.sh"

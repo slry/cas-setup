@@ -1,0 +1,60 @@
+- name: Create nginx directory
+  become: true
+  file:
+    path: "{{ nginx_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Create public directory
+  become: true
+  file:
+    path: "{{ nginx_directory }}/public"
+    state: directory
+    mode: '0775'
+
+- name: Copy dashboard file
+  become: true
+  template:
+    src: dashboard.html.j2
+    dest: "{{ nginx_directory }}/public/index.html"
+    mode: '0775'
+
+- name: Copy docker-compose
+  become: true
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ nginx_directory }}/docker-compose.yml"
+    owner: root
+    mode: '0700'
+
+- name: Copy nginx configuration
+  become: true
+  template:
+    src: nginx.conf.j2
+    dest: "{{ nginx_directory }}/nginx.conf"
+    owner: root
+    mode: '0770'
+  register: nginx_conf
+
+- name: Docker compose up
+  become: true
+  community.docker.docker_compose:
+    project_src: "{{ nginx_directory }}"
+    remove_orphans: true
+  register: compose_up
+
+- name: Restart container
+  when: nginx_conf.changed and not compose_up.changed
+  become: true
+  community.docker.docker_compose:
+    project_src: "{{ nginx_directory }}"
+    restarted: true
+
+- name: Certbot
+  include_tasks: https.yml
+  when: schema == 'https'
+
+
+- name: Everything is ok
+  debug:
+    msg: "Everything looks fine. Visit {{schema}}://{{ domain }}"

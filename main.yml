@@ -1,0 +1,10 @@
+- name: "CAS setup"
+  hosts: cas-server
+  roles:
+    - docker
+    - gitlab
+    - jenkins
+    - sonarqube
+    - taiga
+    - mattermost
+    - nginx

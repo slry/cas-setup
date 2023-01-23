@@ -1,0 +1,19 @@
+#! /bin/bash
+
+working_dir=/tmp/casbackup/sonarqube
+mkdir -p $working_dir
+mkdir -p {{backup_directory}}/sonarqube
+
+# DB
+sudo docker exec cas-sonarqube-db pg_dump -U sonar sonar > "$working_dir/sonarqube-db-backup.sql"
+
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+tar_name="sonarqube_${timestamp}.tar.gz"
+cd $working_dir
+tar -czf {{backup_directory}}/sonarqube/$tar_name ../sonarqube
+
+# Cleaning
+rm -rf $working_dir
+
+# Cleaning old backups
+find {{backup_directory}}/sonarqube -mindepth 1 -mtime +7 -delete

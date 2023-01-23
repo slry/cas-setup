@@ -1,0 +1,19 @@
+#! /bin/bash
+
+working_dir=/tmp/casbackup/jenkins
+mkdir -p $working_dir
+mkdir -p {{backup_directory}}/jenkins
+
+# Data
+sudo docker cp cas-jenkins:/var/jenkins_home "${working_dir}/jenkins_home"
+
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+tar_name="jenkins_${timestamp}.tar.gz"
+cd $working_dir
+tar -czf {{backup_directory}}/jenkins/$tar_name ../jenkins
+
+# Cleaning
+rm -rf $working_dir
+
+# Cleaning old backups
+find {{backup_directory}}/jenkins -mindepth 1 -mtime +7 -delete

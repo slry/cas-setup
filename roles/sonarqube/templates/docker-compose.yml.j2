@@ -1,0 +1,43 @@
+version: "3.5"
+
+services:
+  sonarqube:
+    image: sonarqube:community
+    container_name: cas-sonarqube
+    hostname: sonarqube
+    restart: unless-stopped
+    depends_on:
+      - sonar-db
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: {{ lookup('ansible.builtin.password', '.secrets/sonarqube-db') }}
+      SONAR_WEB_CONTEXT: {{ sonarqube_path }}
+    volumes:
+      - {{sonarqube_directory}}/data:/opt/sonarqube/data
+      - {{sonarqube_directory}}/extensions:/opt/sonarqube/extensions
+      - {{sonarqube_directory}}/logs:/opt/sonarqube/logs
+    expose:
+      - 9000
+    networks:
+      - cas-network
+
+  sonar-db:
+    image: postgres:15
+    container_name: cas-sonarqube-db
+    hostname: sonarqube-db
+    restart: unless-stopped
+    networks:
+      - cas-network
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: {{ lookup('ansible.builtin.password', '.secrets/sonarqube-db') }}
+      POSTGRES_DB: sonar
+    volumes:
+      - {{sonarqube_directory}}/postgresql:/var/lib/postgresql
+      - {{sonarqube_directory}}/postgresql_data:/var/lib/postgresql/data
+
+networks:
+  cas-network:
+    external: true
+    name: {{ docker_network }}
