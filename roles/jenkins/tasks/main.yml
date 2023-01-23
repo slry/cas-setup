@@ -27,6 +27,22 @@
     owner: root
     mode: '0700'
 
+- name: Copy custom Jenkins Dockerfile
+  become: true
+  copy:
+    src: Dockerfile
+    dest: "{{ jenkins_directory }}/Dockerfile"
+    owner: root
+    mode: '0700'
+
+- name: Build custom Jenkins
+  become: true
+  community.docker.docker_image:
+    build:
+      path: "{{ jenkins_directory }}"
+    name: cas-server/jenkins
+    source: build
+
 - name: Docker compose up
   become: true
   community.docker.docker_compose:

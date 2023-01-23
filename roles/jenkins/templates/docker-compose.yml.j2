@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   jenkins:
-    image: jenkins/jenkins:latest
+    image: cas-server/jenkins:latest
     container_name: cas-jenkins
     hostname: jenkins
     restart: unless-stopped
@@ -30,6 +30,7 @@ services:
     expose:
       - 2376
     volumes:
+      - {{ jenkins_directory }}/home:/var/jenkins_home
       - {{ jenkins_directory }}/certs:/certs/client
     environment:
       - DOCKER_TLS_CERTDIR=/certs
