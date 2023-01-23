@@ -20,7 +20,6 @@
     - "{{ mattermost_directory }}/data"
     - "{{ mattermost_directory }}/logs"
     - "{{ mattermost_directory }}/plugins"
-    - "{{ mattermost_directory }}/plugins"
     - "{{ mattermost_directory }}/bleve-indexes"
 
 - name: Copy docker-compose
