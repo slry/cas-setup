@@ -36,7 +36,9 @@ In order to issue the certificate, the `email` field is required and the server 
 ```
 ansible-playbook main.yml -i hosts
 ```
-If the user requires password authentication, add the `-kK` flag (it will prompt for the password of the user and then for the password to use sudo)
+If the user requires password authentication, add the `-kK` flag (it will prompt for the password of the user and then for the password to use sudo).
+
+Note: the server's key fingerprint should already be on the Ansible host.
 
 
 ## Initial setup
