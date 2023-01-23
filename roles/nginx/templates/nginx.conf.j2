@@ -59,19 +59,14 @@ http {
         # Use Docker DNS
         resolver 127.0.0.11 valid=10s;
 
+
         location / {
             autoindex on;
             root  /var/www/html/dashboard;
         }
 
-        set $gitlab_upstream "gitlab";
-        set $sonarqube_upstream "sonarqube:9000";
-        set $mattermost_upstream "mattermost:8065";
-        set $jenkins_upstream "jenkins:8080";
-        set $taiga_upstream "taiga";
-
         location {{ gitlab_path }} {
-            proxy_pass http://$gitlab_upstream;
+            proxy_pass http://gitlab;
             proxy_set_header        X-Real-IP               $remote_addr;
             proxy_set_header        X-Forwarded-For         $proxy_add_x_forwarded_for;
             proxy_set_header        X-Forwarded-Proto       $scheme;
@@ -85,7 +80,7 @@ http {
         }
 
         location {{ sonarqube_path }} {
-            proxy_pass	http://$sonarqube_upstream{{ sonarqube_path }};	
+            proxy_pass http://sonarqube:9000{{ sonarqube_path }};	
             proxy_set_header Host $http_host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Scheme $scheme;
@@ -95,7 +90,7 @@ http {
         }
 
         location {{ mattermost_path }} {
-            proxy_pass http://$mattermost_upstream;	
+            proxy_pass http://mattermost:8065;	
             client_max_body_size 50M;
             proxy_set_header Connection "";
             proxy_set_header Host $http_host;
@@ -110,7 +105,7 @@ http {
             proxy_http_version 1.1;
         }
         location ~ {{ mattermost_path }}/api/v[0-9]+/(users/)?websocket$ {
-            proxy_pass http://$mattermost_upstream;	
+            proxy_pass http://mattermost:8065;	
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
             client_max_body_size 50M;
@@ -132,7 +127,7 @@ http {
         }
 
         location {{ jenkins_path }} {
-            proxy_pass         http://$jenkins_upstream;
+            proxy_pass http://jenkins:8080;
             sendfile off;
             proxy_http_version 1.1;
 
@@ -164,7 +159,7 @@ http {
         }
 
         location {{ taiga_path }}/ {
-            proxy_pass http://$taiga_upstream/;
+            proxy_pass http://taiga/;
             proxy_set_header Host $http_host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Scheme $scheme;
@@ -174,7 +169,7 @@ http {
             client_max_body_size 100M;
         }
         location {{ taiga_path }}/events {
-            proxy_pass http://$taiga_upstream/events;
+            proxy_pass http://taiga/events;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
