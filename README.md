@@ -8,6 +8,7 @@ Compositional Agile System (CAS) in an open source development environment mainl
 Included software are [Gitlab](https://about.gitlab.com/), [Taiga](https://www.taiga.io/), [Jenkins](https://www.jenkins.io/), [Sonarqube](https://www.sonarsource.com/products/sonarqube/) and [Mattermost](https://mattermost.com/).
 
 
+
 ## Installation
 
 ### Prerequisites
@@ -32,6 +33,7 @@ If `schema` is set to `https`, it will handle the request of a Let's Encrypt cer
 In order to issue the certificate, the `email` field is required and the server must be publicly reachable on port 80.
 
 
+
 ### Deployment
 ```
 ansible-playbook main.yml -i hosts
@@ -41,59 +43,66 @@ If the user requires password authentication, add the `-kK` flag (it will prompt
 Note: the server's key fingerprint should already be on the Ansible host.
 
 
+
 ## Initial setup
-### Gitlab `http(s)://domain/gitlab`
+### Gitlab 
+URL: `http(s)://domain/gitlab`\
 The `root` user temporary password is located in the container:
 ```
 docker exec cas-gitlab cat /etc/gitlab/initial_root_password
 ```
 
-### Jenkins `http(s)://domain/jenkins`
+### Jenkins 
+URL: `http(s)://domain/jenkins`\
 The initial password is located in the container:
 ```
 docker exec cas-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
-### Sonarqube `http(s)://domain/sonarqube`
+### Sonarqube 
+URL: `http(s)://domain/sonarqube`\
 The default user is `admin`/`admin`.
 
-Set the `Server base URL` field in `Administration > Configuration > General Settings > General` with the URL of Sonarqube (e.g. https://domain/sonarqube).
+Set the `Server base URL` field in **Administration > Configuration > General Settings > General** with the URL of Sonarqube (e.g. http(s)://domain/sonarqube).
 
-### Taiga `http(s)://domain/taiga`
+### Taiga 
+URL: `http(s)://domain/taiga`\
 Create an admin user by running:
 ```
 docker exec -it cas-taiga-back python manage.py createsuperuser
 ```
 The admin panel can be found at `http(s)://domain/taiga/admin/` (beware of the final slash).
 
-### Mattermost `http(s)://domain/mattermost`
+### Mattermost 
+URL: `http(s)://domain/mattermost`\
 The first user to signup will automatically become administrator.
 
 
 
 ## Setup Gitlab SSO
-You can create a Gitlab OAuth application in the `Admin Area > Applications` tab.
+You can create a Gitlab OAuth application in the **Admin Area > Applications** tab.
 
 ### Jenkins
-1. Install the `GitLab Authentication` plugin.
-2. Go into the `Manage Jenkins > Configure Global Security` tab and select as _Security Realm_ `Gitlab Authentication Plugin`.
-3. Create a new Gitlab OAuth application with scope `api` and return URI `/jenkins/securityRealm/finishLogin` (e.g. https://domain/jenkins/securityRealm/finishLogin).
+1. Install the plugin: **GitLab Authentication**.
+2. Go into the **Manage Jenkins > Configure Global Security** tab and select as **Security Realm** `Gitlab Authentication Plugin`.
+3. Create a new Gitlab OAuth application with scope `api` and return URI `/jenkins/securityRealm/finishLogin` (e.g. http(s)://domain/jenkins/securityRealm/finishLogin).
 4. On the Jenkins panel insert the required data.
 
 ### Sonarqube
-1. Go into the `Administration > Configuration > General Settings > Authentication > GitLab Authentication` tab.
+1. Go into the **Administration > Configuration > General Settings > Authentication > GitLab Authentication** tab.
 2. Follow the on-screen instructions.\
-    The return URI of the OAuth application is `/sonarqube/oauth2/callback/gitlab` (e.g. https://domain/sonarqube/oauth2/callback/gitlab) and the scopes are `api` and `read_user`.
+    The return URI of the OAuth application is `/sonarqube/oauth2/callback/gitlab` (e.g. http(s)://domain/sonarqube/oauth2/callback/gitlab) and the scopes are `api` and `read_user`.
 
 ### Taiga
-1. Create a Gitlab OAuth application with return URI `/taiga/login` (e.g. https://domain/taiga/login) and scope `read_user`.
+1. Create a Gitlab OAuth application with return URI `/taiga/login` (e.g. http(s)://domain/taiga/login) and scope `read_user`.
 2. Insert client ID and client secret into the Ansible `hosts` file (`taiga_gitlab_clientid` and `taiga_gitlab_clientsecret`).
 3. Re-run the Ansible playbook.
 
 ### Mattermost
-1. In the System Console, go into the `Gitlab` tab (under the Authentication section).
+1. In the **System Console**, go into the **Gitlab** tab (under the **Authentication** section).
 2. Follow the on-screen instructions.\
   The scope of the OAuth application is `api`.
+
 
 
 ## Useful integrations
