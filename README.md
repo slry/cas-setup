@@ -94,3 +94,13 @@ You can create a Gitlab OAuth application in the `Admin Area > Applications` tab
 1. In the System Console, go into the `Gitlab` tab (under the Authentication section).
 2. Follow the on-screen instructions.\
   The scope of the OAuth application is `api`.
+
+
+## Useful integrations
+- [Gitlab - Taiga](https://docs.taiga.io/integrations-gitlab.html)
+- [Gitlab - Mattermost](https://docs.gitlab.com/ee/user/project/integrations/mattermost.html)
+- [Gitlab - Jenkins](https://docs.gitlab.com/ee/integration/jenkins.html)
+- [Jenkins - Sonarqube](https://docs.sonarqube.org/9.6/analyzing-source-code/scanners/jenkins-extension-sonarqube/)
+- [Jenkins - Mattermost](https://www.jenkins.io/doc/pipeline/steps/mattermost/)
+- [Discord - Jenkins](https://plugins.jenkins.io/discord-notifier/)
+- [Discord - Gitlab](https://docs.gitlab.com/ee/user/project/integrations/discord_notifications.html)
