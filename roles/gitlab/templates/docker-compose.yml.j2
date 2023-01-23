@@ -17,7 +17,7 @@ services:
     expose:
       - 80
     ports:
-      - {{ gitlab_ssh_port }}:22
+      - "{{ gitlab_ssh_port }}:22"
     volumes:
       - {{ gitlab_directory }}/config:/etc/gitlab
       - {{ gitlab_directory }}/logs:/var/log/gitlab
