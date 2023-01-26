@@ -24,7 +24,7 @@ services:
     environment:
       - TZ=UTC
       - MM_SQLSETTINGS_DRIVERNAME=postgres
-      - MM_SQLSETTINGS_DATASOURCE=postgres://mattermost:{{ lookup('ansible.builtin.password', '.secrets/mattermost-db') }}@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mattermost:{{ db_password }}@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10
       - MM_BLEVESETTINGS_INDEXDIR={{ mattermost_directory }}/bleve-indexes
       - MM_SERVICESETTINGS_SITEURL={{schema}}://{{domain}}{{mattermost_path}}
     networks:
@@ -43,7 +43,7 @@ services:
     environment:
       - TZ=UTC
       - POSTGRES_USER=mattermost
-      - POSTGRES_PASSWORD={{ lookup('ansible.builtin.password', '.secrets/mattermost-db') }}
+      - POSTGRES_PASSWORD={{ db_password }}
       - POSTGRES_DB=mattermost
     networks:
       - cas-network

@@ -13,16 +13,16 @@ services:
     environment:
       - POSTGRES_DB=taiga
       - POSTGRES_USER=taiga
-      - POSTGRES_PASSWORD={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
+      - POSTGRES_PASSWORD={{ password }}
       - POSTGRES_HOST=taiga-db
-      - TAIGA_SECRET_KEY={{ lookup('ansible.builtin.password', '.secrets/taiga-secret chars=ascii_letters,digits') }}
+      - TAIGA_SECRET_KEY={{ secret }}
       - TAIGA_SITES_SCHEME={{ schema }}
       - TAIGA_SITES_DOMAIN={{ domain }}
       - TAIGA_SUBPATH={{ taiga_path }}
       - RABBITMQ_USER=taiga
-      - RABBITMQ_PASS={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
-      - EVENTS_PUSH_BACKEND_URL=amqp://taiga:{{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}@taiga-events-rabbitmq:5672/taiga
-      - CELERY_BROKER_URL=amqp://taiga:{{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}@taiga-async-rabbitmq:5672/taiga
+      - RABBITMQ_PASS={{ password }}
+      - EVENTS_PUSH_BACKEND_URL=amqp://taiga:{{ password }}@taiga-events-rabbitmq:5672/taiga
+      - CELERY_BROKER_URL=amqp://taiga:{{ password }}@taiga-async-rabbitmq:5672/taiga
       - ENABLE_TELEMETRY=False
       - ENABLE_GITLAB_AUTH=True
       - GITLAB_API_CLIENT_ID={{ taiga_gitlab_clientid }}
@@ -50,7 +50,7 @@ services:
     environment:
       - POSTGRES_DB=taiga
       - POSTGRES_USER=taiga
-      - POSTGRES_PASSWORD={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
+      - POSTGRES_PASSWORD={{ password }}
     volumes:
       - {{ taiga_directory }}/db-data:/var/lib/postgresql/data
     networks:
@@ -64,14 +64,14 @@ services:
     environment:
       - POSTGRES_DB=taiga
       - POSTGRES_USER=taiga
-      - POSTGRES_PASSWORD={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
+      - POSTGRES_PASSWORD={{ password }}
       - POSTGRES_HOST=taiga-db
-      - TAIGA_SECRET_KEY={{ lookup('ansible.builtin.password', '.secrets/taiga-secret chars=ascii_letters,digits') }}
+      - TAIGA_SECRET_KEY={{ secret }}
       - TAIGA_SITES_SCHEME={{ schema }}
       - TAIGA_SITES_DOMAIN={{ domain }}
       - TAIGA_SUBPATH={{ taiga_path }}
       - RABBITMQ_USER=taiga
-      - RABBITMQ_PASS={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
+      - RABBITMQ_PASS={{ password }}
       - ENABLE_TELEMETRY=False
       - ENABLE_GITLAB_AUTH=True
       - GITLAB_API_CLIENT_ID={{ taiga_gitlab_clientid }}
@@ -97,9 +97,9 @@ services:
     container_name: cas-taiga-async-rabbitmq
     restart: unless-stopped
     environment:
-      - RABBITMQ_ERLANG_COOKIE={{ lookup('ansible.builtin.password', '.secrets/taiga-secret chars=ascii_letters,digits') }}
+      - RABBITMQ_ERLANG_COOKIE={{ secret }}
       - RABBITMQ_DEFAULT_USER=taiga
-      - RABBITMQ_DEFAULT_PASS={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
+      - RABBITMQ_DEFAULT_PASS={{ password }}
       - RABBITMQ_DEFAULT_VHOST=taiga
     volumes:
       - taiga-async-rabbitmq-data:/var/lib/rabbitmq
@@ -127,8 +127,8 @@ services:
     restart: unless-stopped
     environment:
       - RABBITMQ_USER=taiga
-      - RABBITMQ_PASS={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
-      - TAIGA_SECRET_KEY={{ lookup('ansible.builtin.password', '.secrets/taiga-secret chars=ascii_letters,digits') }}
+      - RABBITMQ_PASS={{ password }}
+      - TAIGA_SECRET_KEY={{ secret }}
     networks:
       - cas-network
     depends_on:
@@ -139,9 +139,9 @@ services:
     container_name: cas-taiga-events-rabbitmq
     restart: unless-stopped
     environment:
-      - RABBITMQ_ERLANG_COOKIE={{ lookup('ansible.builtin.password', '.secrets/taiga-secret chars=ascii_letters,digits') }}
+      - RABBITMQ_ERLANG_COOKIE={{ secret }}
       - RABBITMQ_DEFAULT_USER=taiga
-      - RABBITMQ_DEFAULT_PASS={{ lookup('ansible.builtin.password', '.secrets/taiga-password chars=ascii_letters,digits') }}
+      - RABBITMQ_DEFAULT_PASS={{ password }}
       - RABBITMQ_DEFAULT_VHOST=taiga
     volumes:
       - taiga-events-rabbitmq-data:/var/lib/rabbitmq
@@ -154,7 +154,7 @@ services:
     restart: unless-stopped
     environment:
       - MAX_AGE=360
-      - SECRET_KEY={{ lookup('ansible.builtin.password', '.secrets/taiga-secret chars=ascii_letters,digits') }}
+      - SECRET_KEY={{ secret }}
     networks:
       - cas-network
 

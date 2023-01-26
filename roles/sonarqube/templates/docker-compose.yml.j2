@@ -11,7 +11,7 @@ services:
     environment:
       SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonar
       SONAR_JDBC_USERNAME: sonar
-      SONAR_JDBC_PASSWORD: {{ lookup('ansible.builtin.password', '.secrets/sonarqube-db') }}
+      SONAR_JDBC_PASSWORD: {{ db_password }}
       SONAR_WEB_CONTEXT: {{ sonarqube_path }}
     volumes:
       - {{sonarqube_directory}}/data:/opt/sonarqube/data
@@ -31,7 +31,7 @@ services:
       - cas-network
     environment:
       POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: {{ lookup('ansible.builtin.password', '.secrets/sonarqube-db') }}
+      POSTGRES_PASSWORD: {{ db_password }}
       POSTGRES_DB: sonar
     volumes:
       - {{sonarqube_directory}}/postgresql:/var/lib/postgresql
