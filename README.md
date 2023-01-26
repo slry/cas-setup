@@ -104,6 +104,10 @@ You can create a Gitlab OAuth application in the **Admin Area > Applications** t
   The scope of the OAuth application is `api`.
 
 
+## Add or remove a service
+To add or remove a service, create (or delete) a role and add (or remove) it to `main.yml`.\
+Update `roles/nginx/templates/nginx.conf.j2` accordingly.
+
 
 ## Useful integrations
 - [Gitlab - Taiga](https://docs.taiga.io/integrations-gitlab.html)
