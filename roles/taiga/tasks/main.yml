@@ -78,6 +78,20 @@
     remove_orphans: true
 
 
+- name: Copy nginx configuration
+  become: true
+  block:
+    - template:
+        src: nginx.conf.j2
+        dest: "{{ nginx_directory }}/includes/taiga.conf"
+        owner: root
+        mode: '0700'
+      register: nginx_conf
+    - ansible.builtin.set_fact:
+        when: nginx_conf.changed
+        should_restart_nginx: true
+
+
 - name: Copy backup script
   become: true
   template:

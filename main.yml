@@ -2,6 +2,7 @@
   hosts: cas-server
   roles:
     - docker
+    - nginx_init
     - gitlab
     - jenkins
     - sonarqube

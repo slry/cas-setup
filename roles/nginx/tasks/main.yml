@@ -1,24 +1,3 @@
-- name: Create nginx directory
-  become: true
-  file:
-    path: "{{ nginx_directory }}"
-    state: directory
-    mode: '0770'
-
-- name: Create public directory
-  become: true
-  file:
-    path: "{{ nginx_directory }}/public"
-    state: directory
-    mode: '0775'
-
-- name: Copy dashboard file
-  become: true
-  template:
-    src: dashboard.html.j2
-    dest: "{{ nginx_directory }}/public/index.html"
-    mode: '0775'
-
 - name: Copy docker-compose
   become: true
   template:
@@ -44,7 +23,7 @@
   register: compose_up
 
 - name: Restart container
-  when: nginx_conf.changed and not compose_up.changed
+  when: (nginx_conf.changed or should_restart_nginx) and not compose_up.changed
   become: true
   community.docker.docker_compose:
     project_src: "{{ nginx_directory }}"

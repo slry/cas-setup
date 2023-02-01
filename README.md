@@ -102,8 +102,10 @@ You can create a Gitlab OAuth application in the **Admin Area > Applications** t
 
 
 ## Add or remove a service
-To add or remove a service, create (or delete) a role and add (or remove) it to `main.yml`.\
-Update `roles/nginx/templates/nginx.conf.j2` accordingly.
+To add a service, create a role and add it to `main.yml`.\
+Create a nginx configuration and move it to `{{ nginx_directory }}/includes`.
+
+To remove a service, delete its corresponding row from `main.yml`.
 
 
 ## Useful integrations
