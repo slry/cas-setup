@@ -80,16 +80,12 @@ The first user to signup will automatically become administrator.
 There is an Ansible playbook to setup Gitlab SSO.\
 If you prefer to do it manually, some references can be found [here](gitlab-sso.md).
 
-To use the playbook, all services should already have been initialized.
-1. Create a Gitlab Access Token as the administator user: 
-    - **Click on user avatar > Edit profile > Access Tokens**
-    - Create a token with scope `api`
-2. Run:
-    ```
-    ansible-playbook sso.yml -i hosts
-    ```
-    If the user requires password authentication, add the `-kK` flag (it will prompt for the password of the user and then for the password to use sudo).\
-    It will prompt for the Gitlab Access token and some other credentials.
+To use the playbook, all services should already have been initialized.\
+Run:
+```
+ansible-playbook sso.yml -i hosts
+```
+If the user requires password authentication, add the `-kK` flag (it will prompt for the password of the user and then for the password to use sudo).
 
 ### Jenkins
 Jenkins SSO setup must be done manually. 

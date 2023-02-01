@@ -3,8 +3,6 @@
 
 
   vars_prompt:
-    - name: gitlab_access_token
-      prompt: Gitlab admin's Access token
 
     - name: sonarqube_username
       prompt: Sonarqube administrator's username
@@ -20,6 +18,19 @@
 
 
   tasks:
+    - name: "Create Gitlab root Access token"
+      become: true
+      block:
+        - name: "Generate token value"
+          set_fact:
+            gitlab_access_token: "{{ lookup('ansible.builtin.password', '/dev/null length=20 chars=ascii_letters,digits') }}"
+        - name: "Create token"
+          community.docker.docker_container_exec:
+            container: cas-gitlab
+            command: "gitlab-rails runner \"token = User.find_by_username('root').personal_access_tokens.create(scopes: [:api], name: 'Ansible SSO setup'); token.set_token('{{ gitlab_access_token }}'); token.save!\""
+            chdir: /
+
+
     - name: Setup SSO in Taiga
       import_tasks:
         file: ./sso/taiga.yml
@@ -31,3 +42,12 @@
     - name: Setup SSO in Mattermost
       import_tasks:
         file: ./sso/mattermost.yml
+
+
+    - name: "Remove Gitlab root Access token"
+      become: true
+      block:
+        - community.docker.docker_container_exec:
+            container: cas-gitlab
+            command: "gitlab-rails runner \"PersonalAccessToken.find_by_token('{{ gitlab_access_token }}').revoke!\""
+            chdir: /
