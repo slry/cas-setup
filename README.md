@@ -77,28 +77,26 @@ The first user to signup will automatically become administrator.
 
 
 ## Setup Gitlab SSO
-You can create a Gitlab OAuth application in the **Admin Area > Applications** tab.
+There is an Ansible playbook to setup Gitlab SSO.\
+If you prefer to do it manually, some references can be found [here](gitlab-sso.md).
+
+To use the playbook, all services should already have been initialized.
+1. Create a Gitlab Access Token as the administator user: 
+    - **Click on user avatar > Edit profile > Access Tokens**
+    - Create a token with scope `api`
+2. Run:
+    ```
+    ansible-playbook sso.yml -i hosts
+    ```
+    If the user requires password authentication, add the `-kK` flag (it will prompt for the password of the user and then for the password to use sudo).\
+    It will prompt for the Gitlab Access token and some other credentials.
 
 ### Jenkins
+Jenkins SSO setup must be done manually. 
 1. Install the plugin: **GitLab Authentication**.
 2. Go into the **Manage Jenkins > Configure Global Security** tab and select as **Security Realm** `Gitlab Authentication Plugin`.
-3. Create a new Gitlab OAuth application with scope `api` and return URI `/jenkins/securityRealm/finishLogin` (e.g. http(s)://domain/jenkins/securityRealm/finishLogin).
+3. Create a new Gitlab OAuth application (**Admin Area > Applications**) with scope `api` and return URI `/jenkins/securityRealm/finishLogin` (e.g. http(s)://domain/jenkins/securityRealm/finishLogin).
 4. On the Jenkins panel insert the required data.
-
-### Sonarqube
-1. Go into the **Administration > Configuration > General Settings > Authentication > GitLab Authentication** tab.
-2. Follow the on-screen instructions.\
-    The return URI of the OAuth application is `/sonarqube/oauth2/callback/gitlab` (e.g. http(s)://domain/sonarqube/oauth2/callback/gitlab) and the scopes are `api` and `read_user`.
-
-### Taiga
-1. Create a Gitlab OAuth application with return URI `/taiga/login` (e.g. http(s)://domain/taiga/login) and scope `read_user`.
-2. Insert client ID and client secret into the Ansible `hosts` file (`taiga_gitlab_clientid` and `taiga_gitlab_clientsecret`).
-3. Re-run the Ansible playbook.
-
-### Mattermost
-1. In the **System Console**, go into the **Gitlab** tab (under the **Authentication** section).
-2. Follow the on-screen instructions.\
-  The scope of the OAuth application is `api`.
 
 
 ## Add or remove a service
