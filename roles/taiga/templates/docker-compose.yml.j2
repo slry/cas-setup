@@ -24,7 +24,7 @@ services:
       - EVENTS_PUSH_BACKEND_URL=amqp://taiga:{{ password }}@taiga-events-rabbitmq:5672/taiga
       - CELERY_BROKER_URL=amqp://taiga:{{ password }}@taiga-async-rabbitmq:5672/taiga
       - ENABLE_TELEMETRY=False
-      - ENABLE_GITLAB_AUTH=True
+      - ENABLE_GITLAB_AUTH={{ 'True' if taiga_gitlab_clientid and taiga_gitlab_clientsecret else 'False' }}
       - GITLAB_API_CLIENT_ID={{ taiga_gitlab_clientid }}
       - GITLAB_API_CLIENT_SECRET={{ taiga_gitlab_clientsecret }}
       - GITLAB_URL={{ schema }}://{{ domain }}{{ gitlab_path }}/
@@ -73,7 +73,7 @@ services:
       - RABBITMQ_USER=taiga
       - RABBITMQ_PASS={{ password }}
       - ENABLE_TELEMETRY=False
-      - ENABLE_GITLAB_AUTH=True
+      - ENABLE_GITLAB_AUTH={{ 'True' if taiga_gitlab_clientid and taiga_gitlab_clientsecret else 'False' }}
       - GITLAB_API_CLIENT_ID={{ taiga_gitlab_clientid }}
       - GITLAB_API_CLIENT_SECRET={{ taiga_gitlab_clientsecret }}
       - GITLAB_URL={{ schema }}://{{ domain }}{{ gitlab_path }}
@@ -114,7 +114,7 @@ services:
       - TAIGA_URL={{ schema }}://{{ domain }}
       - TAIGA_WEBSOCKETS_URL={{ 'wss' if schema == 'https' else 'ws' }}://{{ domain }}
       - TAIGA_SUBPATH={{ taiga_path }}
-      - ENABLE_GITLAB_AUTH=true
+      - ENABLE_GITLAB_AUTH={{ 'true' if taiga_gitlab_clientid and taiga_gitlab_clientsecret else 'false' }}
       - GITLAB_CLIENT_ID={{ taiga_gitlab_clientid }}
       - GITLAB_URL={{ schema }}://{{ domain }}{{ gitlab_path }}
       - PUBLIC_REGISTER_ENABLED=true

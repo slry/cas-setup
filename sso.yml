@@ -1,0 +1,13 @@
+- name: Gitlab SSO
+  hosts: cas-server
+
+
+  vars_prompt:
+    - name: gitlab_access_token
+      prompt: Gitlab admin Access token
+
+
+  tasks:
+    - name: Setup SSO in Taiga
+      import_tasks:
+        file: ./sso/taiga.yml

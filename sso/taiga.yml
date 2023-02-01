@@ -1,0 +1,36 @@
+- name: Create a Gitlab OAuth application
+  ansible.builtin.uri:
+    url: "{{ schema }}://{{ domain }}{{ gitlab_path }}/api/v4/applications"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+    body_format: json
+    body:
+      name: "Taiga"
+      redirect_uri: "{{ schema }}://{{ domain }}{{ taiga_path }}/login"
+      scopes: "read_user"
+    status_code: 201
+  register: gitlab_oauth
+
+
+- name: Save tokens
+  become: true
+  block:
+    - name: Client id
+      block:
+      - name: Save client id
+        copy:
+          dest: "{{ taiga_directory }}/.secrets/gitlab_sso_client.txt"
+          content: "{{ gitlab_oauth.json.application_id }}"
+
+    - name: Secret
+      block:
+      - name: Save secret
+        copy:
+          dest: "{{ taiga_directory }}/.secrets/gitlab_sso_secret.txt"
+          content: "{{ gitlab_oauth.json.secret }}"
+
+
+- name: Restart Taiga
+  import_role:
+    name: taiga

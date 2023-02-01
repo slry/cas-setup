@@ -56,6 +56,48 @@
           - set_fact:
               secret: "{{ db_password_slurp.content | b64decode }}"
 
+- name: Retreive Gitlab SSO tokens
+  become: true
+  block:
+    - name: Client id
+      block:
+        - name: Check if client id exists
+          stat:
+            path: "{{ taiga_directory }}/.secrets/gitlab_sso_client.txt"
+          register: sso_client_file
+        - name: Default value
+          when: not sso_client_file.stat.exists
+          set_fact:
+            taiga_gitlab_clientid: ""
+        - name: Read client id
+          when: sso_client_file.stat.exists
+          block:
+            - slurp:
+                src: "{{ taiga_directory }}/.secrets/gitlab_sso_client.txt"
+              register: db_password_slurp
+            - set_fact:
+                taiga_gitlab_clientid: "{{ db_password_slurp.content | b64decode }}"
+      
+    - name: Secret
+      block:
+        - name: Check if secret exists
+          stat:
+            path: "{{ taiga_directory }}/.secrets/gitlab_sso_secret.txt"
+          register: sso_secret_file
+        - name: Default value
+          when: not sso_secret_file.stat.exists
+          set_fact:
+            taiga_gitlab_clientsecret: ""
+        - name: Read secret
+          when: sso_secret_file.stat.exists
+          block:
+            - slurp:
+                src: "{{ taiga_directory }}/.secrets/gitlab_sso_secret.txt"
+              register: db_password_slurp
+            - set_fact:
+                taiga_gitlab_clientsecret: "{{ db_password_slurp.content | b64decode }}"
+
+
 - name: Copy nginx configuration
   become: true
   template:
