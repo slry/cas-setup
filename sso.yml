@@ -4,10 +4,20 @@
 
   vars_prompt:
     - name: gitlab_access_token
-      prompt: Gitlab admin Access token
+      prompt: Gitlab admin's Access token
+
+    - name: sonarqube_username
+      prompt: Sonarqube administrator's username
+      private: false
+    - name: sonarqube_password
+      prompt: Sonarqube administrator's password
 
 
   tasks:
     - name: Setup SSO in Taiga
       import_tasks:
         file: ./sso/taiga.yml
+
+    - name: Setup SSO in Sonarqube
+      import_tasks:
+        file: ./sso/sonarqube.yml

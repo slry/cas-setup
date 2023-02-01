@@ -1,0 +1,90 @@
+- name: Create a Gitlab OAuth application
+  ansible.builtin.uri:
+    url: "{{ schema }}://{{ domain }}{{ gitlab_path }}/api/v4/applications"
+    method: POST
+    headers:
+      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+    body_format: json
+    body:
+      name: "Sonarqube"
+      redirect_uri: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/oauth2/callback/gitlab"
+      scopes: "api read_user"
+    status_code: 201
+  register: gitlab_oauth
+
+
+- name: Set BaseURL
+  ansible.builtin.uri:
+    url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/api/settings/set"
+    user: "{{ sonarqube_username }}"
+    password: "{{ sonarqube_password }}"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      key: "sonar.core.serverBaseURL"
+      value: "{{ schema }}://{{ domain }}{{ sonarqube_path }}"
+    force_basic_auth: yes
+    status_code: 204
+
+- name: Setup Gitlab SSO
+  block:
+    - ansible.builtin.uri:
+        url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/api/settings/set"
+        user: "{{ sonarqube_username }}"
+        password: "{{ sonarqube_password }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          key: "sonar.auth.gitlab.enabled"
+          value: "true"
+        force_basic_auth: yes
+        status_code: 204
+
+    - ansible.builtin.uri:
+        url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/api/settings/set"
+        user: "{{ sonarqube_username }}"
+        password: "{{ sonarqube_password }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          key: "sonar.auth.gitlab.url"
+          value: "{{ schema }}://{{ domain }}{{ gitlab_path }}"
+        force_basic_auth: yes
+        status_code: 204
+
+    - ansible.builtin.uri:
+        url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/api/settings/set"
+        user: "{{ sonarqube_username }}"
+        password: "{{ sonarqube_password }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          key: "sonar.auth.gitlab.applicationId.secured"
+          value: "{{ gitlab_oauth.json.application_id }}"
+        force_basic_auth: yes
+        status_code: 204
+
+    - ansible.builtin.uri:
+        url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/api/settings/set"
+        user: "{{ sonarqube_username }}"
+        password: "{{ sonarqube_password }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          key: "sonar.auth.gitlab.secret.secured"
+          value: "{{ gitlab_oauth.json.secret }}"
+        force_basic_auth: yes
+        status_code: 204
+
+    - ansible.builtin.uri:
+        url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/api/settings/set"
+        user: "{{ sonarqube_username }}"
+        password: "{{ sonarqube_password }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          key: "sonar.auth.gitlab.groupsSync"
+          value: "true"
+        force_basic_auth: yes
+        status_code: 204
+
