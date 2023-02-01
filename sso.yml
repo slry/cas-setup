@@ -12,6 +12,12 @@
     - name: sonarqube_password
       prompt: Sonarqube administrator's password
 
+    - name: mattermost_username
+      prompt: Mattermost administrator's username
+      private: false
+    - name: mattermost_password
+      prompt: Mattermost administrator's password
+
 
   tasks:
     - name: Setup SSO in Taiga
@@ -21,3 +27,7 @@
     - name: Setup SSO in Sonarqube
       import_tasks:
         file: ./sso/sonarqube.yml
+
+    - name: Setup SSO in Mattermost
+      import_tasks:
+        file: ./sso/mattermost.yml
