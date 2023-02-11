@@ -1,16 +1,59 @@
-- name: Create a Gitlab OAuth application
-  ansible.builtin.uri:
-    url: "{{ schema }}://{{ domain }}{{ gitlab_path }}/api/v4/applications"
-    method: POST
-    headers:
-      PRIVATE-TOKEN: "{{ gitlab_access_token }}"
-    body_format: json
-    body:
-      name: "Sonarqube"
-      redirect_uri: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/oauth2/callback/gitlab"
-      scopes: "api read_user"
-    status_code: 201
-  register: gitlab_oauth
+- name: Retreive Gitlab SSO tokens
+  become: true
+  block:
+    - name: Client id
+      block:
+        - slurp:
+            src: "{{ sonarqube_directory }}/.secrets/gitlab_sso_client.txt"
+          failed_when: false
+          register: slurp_res
+        - set_fact:
+            oauth_client: "{{ slurp_res.content | default('') | b64decode }}"
+            
+    - name: Secret
+      block:
+        - slurp:
+            src: "{{ sonarqube_directory }}/.secrets/gitlab_sso_secret.txt"
+          failed_when: false
+          register: slurp_res
+        - set_fact:
+            oauth_secret: "{{ slurp_res.content | default('') | b64decode }}"
+
+
+- name: Create OAuth tokens
+  when: (oauth_secret == '') or (oauth_client == '')
+  block:
+    - name: Create a Gitlab OAuth application
+      ansible.builtin.uri:
+        url: "{{ schema }}://{{ domain }}{{ gitlab_path }}/api/v4/applications"
+        method: POST
+        headers:
+          PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+        body_format: json
+        body:
+          name: "Sonarqube"
+          redirect_uri: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/oauth2/callback/gitlab"
+          scopes: "api read_user"
+        status_code: 201
+      register: gitlab_oauth
+    
+    - name: Save tokens
+      become: true
+      block:
+        - name: Client id
+          copy:
+            dest: "{{ sonarqube_directory }}/.secrets/gitlab_sso_client.txt"
+            content: "{{ gitlab_oauth.json.application_id }}"
+        - name: Secret
+          copy:
+            dest: "{{ sonarqube_directory }}/.secrets/gitlab_sso_secret.txt"
+            content: "{{ gitlab_oauth.json.secret }}"
+
+    - name: Retreive tokens
+      set_fact:
+        oauth_client: "{{ gitlab_oauth.json.application_id }}"
+        oauth_secret: "{{ gitlab_oauth.json.secret }}"
+
 
 
 - name: Set BaseURL
@@ -60,7 +103,7 @@
         body_format: form-urlencoded
         body:
           key: "sonar.auth.gitlab.applicationId.secured"
-          value: "{{ gitlab_oauth.json.application_id }}"
+          value: "{{ oauth_client }}"
         force_basic_auth: yes
         status_code: 204
 
@@ -72,7 +115,7 @@
         body_format: form-urlencoded
         body:
           key: "sonar.auth.gitlab.secret.secured"
-          value: "{{ gitlab_oauth.json.secret }}"
+          value: "{{ oauth_secret }}"
         force_basic_auth: yes
         status_code: 204
 

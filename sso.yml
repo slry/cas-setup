@@ -46,8 +46,7 @@
 
     - name: "Remove Gitlab root Access token"
       become: true
-      block:
-        - community.docker.docker_container_exec:
-            container: cas-gitlab
-            command: "gitlab-rails runner \"PersonalAccessToken.find_by_token('{{ gitlab_access_token }}').revoke!\""
-            chdir: /
+      community.docker.docker_container_exec:
+        container: cas-gitlab
+        command: "gitlab-rails runner \"PersonalAccessToken.find_by_token('{{ gitlab_access_token }}').revoke!\""
+        chdir: /
