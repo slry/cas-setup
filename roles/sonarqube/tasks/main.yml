@@ -7,16 +7,27 @@
 
 - name: Create required directories
   become: true
-  file:
-    path: "{{ item }}"
-    state: directory
-  loop:
-    - "{{ sonarqube_directory }}/data"
-    - "{{ sonarqube_directory }}/extensions"
-    - "{{ sonarqube_directory }}/logs"
-    - "{{ sonarqube_directory }}/postgresql"
-    - "{{ sonarqube_directory }}/postgresql_data"
-    - "{{ sonarqube_directory }}/.secrets"
+  block:
+    - file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0770'
+        owner: 1000
+        group: 1000
+      loop:
+        - "{{ sonarqube_directory }}/data"
+        - "{{ sonarqube_directory }}/extensions"
+        - "{{ sonarqube_directory }}/logs"
+        - "{{ sonarqube_directory }}/.secrets"
+    - file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0770'
+        owner: 999
+        group: 999
+      loop:
+        - "{{ sonarqube_directory }}/postgresql"
+        - "{{ sonarqube_directory }}/postgresql_data"
 
 - name: Retreive database password
   become: true
