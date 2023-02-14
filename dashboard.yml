@@ -1,0 +1,82 @@
+- name: Unified dashboard
+  hosts: cas-server
+
+  tasks:
+    - name: "Create Gitlab root Access token"
+      become: true
+      block:
+        - name: "Generate token value"
+          set_fact:
+            gitlab_access_token: "{{ lookup('ansible.builtin.password', '/dev/null length=20 chars=ascii_letters,digits') }}"
+        - name: "Create token"
+          community.docker.docker_container_exec:
+            container: cas-gitlab
+            command: "gitlab-rails runner \"token = User.find_by_username('root').personal_access_tokens.create(scopes: [:api], name: 'Ansible SSO setup'); token.set_token('{{ gitlab_access_token }}'); token.save!\""
+            chdir: /
+
+
+    - name: Retreive dashboards's Gitlab SSO client ID
+      become: true
+      block:
+        - slurp:
+            src: "{{ nginx_directory }}/.secrets/dashboard_gitlab_sso_client.txt"
+          failed_when: false
+          register: slurp_res
+        - set_fact:
+            dashboard_oauth_client: "{{ slurp_res.content | default('') | b64decode }}"
+
+    - name: Create OAuth tokens for dashboard
+      when: dashboard_oauth_client == ''
+      block:
+        - name: Create a Gitlab OAuth application
+          ansible.builtin.uri:
+            url: "{{ schema }}://{{ domain }}{{ gitlab_path }}/api/v4/applications"
+            method: POST
+            headers:
+              PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+            body_format: json
+            body:
+              name: "Unified dashboard"
+              redirect_uri: "{{ schema }}://{{ domain }}"
+              scopes: "profile"
+            status_code: 201
+          register: gitlab_oauth
+
+        - name: Save token
+          become: true
+          copy:
+            dest: "{{ nginx_directory }}/.secrets/dashboard_gitlab_sso_client.txt"
+            content: "{{ gitlab_oauth.json.application_id }}"
+
+        - name: Retreive tokens
+          set_fact:
+            dashboard_oauth_client: "{{ gitlab_oauth.json.application_id }}"
+
+
+    - name: Retreive Taiga's Gitlab SSO client ID
+      become: true
+      block:
+        - slurp:
+            src: "{{ taiga_directory }}/.secrets/gitlab_sso_client.txt"
+          failed_when: false
+          register: slurp_res
+        - set_fact:
+            taiga_gitlab_clientid: "{{ slurp_res.content | default('') | b64decode }}"
+
+
+    - name: Copy dashboard file
+      become: true
+      template:
+        src: unified-dashboard/dashboard.html.j2
+        dest: "{{ nginx_directory }}/public/index.html"
+        mode: '0775'
+      vars:
+        dashboard_gitlab_clientid: "{{ dashboard_oauth_client }}"
+        taiga_gitlab_clientid: "{{ taiga_gitlab_clientid }}"
+
+    - name: "Remove Gitlab root Access token"
+      become: true
+      community.docker.docker_container_exec:
+        container: cas-gitlab
+        command: "gitlab-rails runner \"PersonalAccessToken.find_by_token('{{ gitlab_access_token }}').revoke!\""
+        chdir: /

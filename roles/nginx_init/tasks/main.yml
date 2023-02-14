@@ -27,6 +27,15 @@
     state: directory
     mode: '0775'
 
+
+- name: Create secrets directory
+  become: true
+  file:
+    path: "{{ nginx_directory }}/.secrets"
+    state: directory
+    mode: '0700'
+
+
 - name: Copy dashboard file
   become: true
   template:

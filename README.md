@@ -95,6 +95,17 @@ Jenkins SSO setup must be done manually.
 4. On the Jenkins panel insert the required data.
 
 
+
+## Unified dashboard
+This dashboard allows to access all services within a single page.\
+Gitlab SSO should be enabled to make the dashboard work.\
+Run:
+```
+ansible-playbook dashboard.yml -i hosts
+```
+If the user requires password authentication, add the `-kK` flag (it will prompt for the password of the user and then for the password to use sudo).
+
+
 ## Add or remove a service
 To add a service, create a role and add it to `main.yml`.\
 Create a nginx configuration and move it to `{{ nginx_directory }}/includes`.

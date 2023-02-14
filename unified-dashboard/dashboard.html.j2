@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAS</title>
+
+	<style>
+
+		body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #222222;
+        }
+
+        body * {
+            box-sizing: border-box;
+			color: #e1e1e1;
+            font-family: 'Courier New', Courier, monospace;
+		}
+
+
+		iframe {
+			border: none; 
+			vertical-align:bottom;
+		}
+
+
+		#container-cas {
+			display: flex; 
+			flex-wrap: wrap; 
+			flex-direction: row
+		}
+		@media only screen and (max-width: 600px) {
+			#container-cas {
+				flex-direction: column;
+				height: 100vh;
+				width: 100vw;
+			}
+		} 
+
+		#container-navbar-cas {
+			flex: 0 0 auto;
+			width: fit-content;
+			max-width: 100vw;
+			overflow-x: auto;
+			padding: 0.2rem;
+		}
+
+		#navbar-cas {
+			display: flex;
+			flex-direction: column;
+		}
+		@media only screen and (max-width: 600px) {
+			#navbar-cas {
+				flex-direction: row;
+			}
+		} 
+
+		.extend-show {
+			display: none;
+		}
+
+		.navbar-cas-extend {
+			width: fit-content;
+		}
+		.navbar-cas-extend .extend-show {
+			display: flex;
+			flex: 1;
+			align-items: center;
+			justify-content: space-between;
+			margin-left: 0.5rem;
+		}
+
+		.logo-cas {
+			width: 2rem;
+			height: 2rem;
+			display: flex;
+			align-items: center;
+			text-align: center;
+		}
+		.logo-cas img {
+			width: 100%;
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		.button-cas {
+			display: flex;
+			align-items: center;
+			background-color: #353535;
+			border: 1px solid gray;
+			border-radius: 0.5rem;
+			margin-bottom: 0.5rem;
+			padding: 0.5rem;
+			width: 100%;
+			font-size: 1.1rem;
+			text-align: left;
+		}
+		.button-cas:hover {
+			background-color: #505050;
+		}
+		@media only screen and (max-width: 600px) {
+			.button-cas {
+				margin-bottom: 0;
+				margin-right: 0.5rem;
+			}
+		} 
+
+		
+		.icon-link {
+			height: 1.3rem; 
+			width: 1.3rem; 
+			display: inline-block;
+			margin-left: 0.5rem;
+		}
+
+	</style>
+
+</head>
+<body>
+	<div id="container-login" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white;">
+		<iframe id="iframe-login" width="100%" height="100%"
+				src="{{ gitlab_path }}/oauth/authorize?client_id={{ dashboard_gitlab_clientid }}&response_type=code&scope=profile&redirect_uri={{ schema }}://{{ domain }}"></iframe>
+	</div>
+
+
+	<div id="container-cas">
+
+		<div id="container-navbar-cas">
+		<div id="navbar-cas">
+			<button class="button-cas" onclick="changePage('gitlab', '{{ gitlab_path }}')">
+				<div class="logo-cas">
+					<img src="https://about.gitlab.com/images/press/press-kit-icon.svg" alt="">
+				</div>
+				<span class="extend-show">
+					Gitlab
+					<a href="{{ gitlab_path }}">
+						<div class="icon-link">
+							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
+						</div>
+					</a>
+				</span>
+			</button>
+			
+
+			<button class="button-cas" onclick="changePage('taiga', '{{ gitlab_path }}/oauth/authorize?client_id={{ taiga_gitlab_clientid }}&state=gitlab&response_type=code&scope=read_user&redirect_uri={{ schema }}://{{ domain }}{{ taiga_path }}/login')">
+				<div class="logo-cas">
+					<img src="https://assets.brandfolder.com/qi4c28p7/v/357207/original/icon%20taiga%20color.png" alt="">
+				</div>
+				<span class="extend-show">
+					Taiga
+					<a href="{{ taiga_path }}">
+						<div class="icon-link">
+							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
+						</div>
+					</a>
+				</span>
+			</button>
+			
+
+			<button class="button-cas" onclick="changePage('mattermost', '{{ mattermost_path }}/oauth/gitlab/login')">
+				<div class="logo-cas">
+					<img src="https://1435268659-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LorODNCmgMboJfZ7MPT%2Fsync%2F6c7ab89bca0b50a48f1d35edf13e76fd6faf5b43.svg?generation=1614726374299388&alt=media" alt="">
+				</div>
+				<span class="extend-show">
+					Mattermost
+					<a href="{{ mattermost_path }}">
+						<div class="icon-link">
+							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
+						</div>
+					</a>
+				</span>
+			</button>
+			
+
+			<button class="button-cas" onclick="changePage('jenkins', '{{ jenkins_path }}')">
+				<div class="logo-cas">
+					<img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Jenkins_logo.svg" alt="">
+				</div>
+				<span class="extend-show">
+					Jenkins
+					<a href="{{ jenkins_path }}">
+						<div class="icon-link">
+							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
+						</div>
+					</a>
+				</span>
+			</button>
+			
+
+			<button class="button-cas" onclick="changePage('sonarqube', '{{ sonarqube_path }}/sessions/init/gitlab?return_to=%2Fsonarqube%2F')">
+				<div class="logo-cas">
+					<img src="https://plugins.jetbrains.com/files/7238/132659/icon/pluginIcon.svg" alt="">
+				</div>
+				<span class="extend-show">
+					Sonarqube
+					<a href="{{ sonarqube_path }}">
+						<div class="icon-link">
+							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
+						</div>
+					</a>
+				</span>
+			</button>
+			
+
+			<button class="button-cas" onclick="refreshCurrentPage()">
+				<div class="logo-cas">
+					<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M24 40q-6.65 0-11.325-4.675Q8 30.65 8 24q0-6.65 4.675-11.325Q17.35 8 24 8q4.25 0 7.45 1.725T37 14.45V8h3v12.7H27.3v-3h8.4q-1.9-3-4.85-4.85Q27.9 11 24 11q-5.45 0-9.225 3.775Q11 18.55 11 24q0 5.45 3.775 9.225Q18.55 37 24 37q4.15 0 7.6-2.375 3.45-2.375 4.8-6.275h3.1q-1.45 5.25-5.75 8.45Q29.45 40 24 40Z"/></svg>
+				</div>
+				<span class="extend-show">
+					Refresh
+				</span>
+			</button>
+
+
+			<button class="button-cas" onclick="extendNavbar()">
+				<div style="display: flex; justify-content: center; width: 100%">
+					<div class="logo-cas">
+						<svg id="logo-extend-out" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path d="m15.2 43.9-2.8-2.85L29.55 23.9 12.4 6.75l2.8-2.85 20 20Z" fill="#fff" /></svg>
+						<svg id="logo-extend-in" style="display: none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path d="M20 44 0 24 20 4l2.8 2.85L5.65 24 22.8 41.15Z"fill="#fff" /></svg>
+					</div>
+				</div>
+			</button>
+		</div>
+		</div>
+
+		
+		<div id="container-iframe" style="flex: 1; height: 100vh; background-color: white;">
+		</div>
+
+	</div>
+
+
+    <script>
+		let current_page = null;
+
+		// F5 will refresh the iframe
+		document.addEventListener("keydown", (e) => {
+			e = e || window.event;
+			e.preventDefault();
+			if (e.keyCode == 116) { refreshCurrentPage(); }
+		});
+
+		(function() {
+			// Handles login throught Gitlab SSO
+			document.querySelector("#iframe-login").addEventListener("load", () => {
+				// Gitlab SSO redirected back (with some parameters in the URL that will be ignored), which means that the user has logged.
+				const current_url_str = document.querySelector("#iframe-login").contentWindow.location.href;
+				const current_url = new URL(current_url_str);
+
+				if ( current_url_str.startsWith("{{ schema }}://{{ domain }}") && current_url.search !== "" ) {
+					document.querySelector("#container-login").remove();
+				}
+			});
+		})();
+
+        function changePage(label, path) {
+            [...document.querySelectorAll("#container-iframe > iframe")].forEach((el) => el.style.display = "none");
+			
+			current_page = label;
+
+			// iframe already loaded
+            if (document.querySelector(`#${label}`)) {
+                document.querySelector(`#${label}`).style.display = "block";
+            }
+            else { // iframe has to be created
+                const iframe = document.createElement("iframe");
+                
+                iframe.setAttribute("id", label);
+                iframe.setAttribute("src", `${path}`);
+                iframe.setAttribute("width", "100%");
+                iframe.setAttribute("height", "100%");
+                
+                document.querySelector("#container-iframe").appendChild(iframe);
+            }
+        }
+
+		function extendNavbar() {
+			if (document.querySelector("#navbar-cas").classList.contains("navbar-cas-extend")) {
+				document.querySelector("#navbar-cas").classList.remove("navbar-cas-extend");
+				document.querySelector("#logo-extend-out").style.display = "block";
+				document.querySelector("#logo-extend-in").style.display = "none";
+			}
+			else {
+				document.querySelector("#navbar-cas").classList.add("navbar-cas-extend");
+				document.querySelector("#logo-extend-out").style.display = "none";
+				document.querySelector("#logo-extend-in").style.display = "block";
+			}
+		}
+
+		function refreshCurrentPage() {
+			if (current_page && document.querySelector(`#${current_page}`)) {
+				document.querySelector(`#${current_page}`).contentWindow.location.reload();
+			}
+		}
+    </script>
+</body>
+</html>
