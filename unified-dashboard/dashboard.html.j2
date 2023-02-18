@@ -145,7 +145,7 @@
 			</button>
 			
 
-			<button class="button-cas" onclick="changePage('taiga', '{{ gitlab_path }}/oauth/authorize?client_id={{ taiga_gitlab_clientid }}&state=gitlab&response_type=code&scope=read_user&redirect_uri={{ schema }}://{{ domain }}{{ taiga_path }}/login')">
+			<button class="button-cas" onclick="changePage('taiga', `{{ gitlab_path }}/oauth/authorize?client_id={{ taiga_gitlab_clientid }}&state=gitlab&response_type=code&scope=read_user&redirect_uri={{ schema }}://{{ domain }}{{ taiga_path }}/login`)">
 				<div class="logo-cas">
 					<img src="https://assets.brandfolder.com/qi4c28p7/v/357207/original/icon%20taiga%20color.png" alt="">
 				</div>
