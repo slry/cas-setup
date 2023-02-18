@@ -12,7 +12,7 @@ You can create a Gitlab OAuth application in the **Admin Area > Applications** t
 2. Follow the on-screen instructions.\
     The return URI of the OAuth application is `/sonarqube/oauth2/callback/gitlab` (e.g. http(s)://domain/sonarqube/oauth2/callback/gitlab) and the scopes are `api` and `read_user`.
 
-### Taiga
+### Taiga [Obsolete]
 1. Create a Gitlab OAuth application with return URI `/taiga/login` (e.g. http(s)://domain/taiga/login) and scope `read_user`.
 2. Insert client ID and client secret into the Ansible `hosts` file (`taiga_gitlab_clientid` and `taiga_gitlab_clientsecret`).
 3. Re-run the Ansible playbook.
