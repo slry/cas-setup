@@ -77,7 +77,7 @@
           failed_when: false
           register: slurp_res
         - set_fact:
-            taiga_gitlab_clientsecret: "{{ slurp_res.content | default('') | b64decode }}"
+            taiga_gitlab_clientsecret: "{{ slurp_res.content | default('') | b64decode | replace('$', '$$') }}"
       
 
 - name: Copy nginx configuration
