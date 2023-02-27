@@ -24,6 +24,7 @@ The `hosts` file contains some parameters that have to be changed.
 - `ansible_host` set to the address of the server
 - `ansible_user` set to the user to use during the installation (has to be root or a sudoer)
 - `domain` to the domain name or the IP address of the server
+- `install` is a dictionary to select which services will be installed
 
 #### Enable HTTPS
 If `schema` is set to `https`, it will handle the request of a Let's Encrypt certificate (which will automatically accept its [TOS](https://letsencrypt.org/repository/)) and create a cron job for the renewal.\
@@ -107,10 +108,7 @@ If the user requires password authentication, add the `-kK` flag (it will prompt
 
 
 ## Add or remove a service
-To add a service, create a role and add it to `main.yml`.\
-Create a nginx configuration and move it to `{{ nginx_directory }}/includes`.
-
-To remove a service, delete its corresponding row from `main.yml`.
+Refer to [this file](services.md).
 
 
 ## Useful integrations
