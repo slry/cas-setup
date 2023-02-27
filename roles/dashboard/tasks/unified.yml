@@ -1,0 +1,10 @@
+- name: Setup variables
+  import_tasks:
+    file: services.yml
+
+- name: Copy dashboard file
+  become: true
+  template:
+    src: unified.html.j2
+    dest: "{{ nginx_directory }}/public/index.html"
+    mode: '0775'

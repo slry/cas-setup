@@ -22,3 +22,12 @@
       import_role:
         name: nginx
         tasks_from: main
+
+    - name: Setup dashboard
+      import_role:
+        name: dashboard
+        tasks_from: standard
+
+    - name: Everything is ok
+      debug:
+        msg: "Everything looks fine. Visit {{schema}}://{{ domain }}"

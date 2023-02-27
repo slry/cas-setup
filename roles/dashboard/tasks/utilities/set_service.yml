@@ -1,0 +1,19 @@
+- name: Set service dashboard information
+  block:
+    - name: Copy icon
+      become: true
+      copy:
+        src: "{{ service_to_copy_image }}"
+        dest: "{{ nginx_directory }}/public/images/{{ service_to_copy_image }}"
+        mode: "0775"
+
+    - name: Set link information
+      set_fact:
+        info:
+          label: "{{ service_label }}"
+          url: "{{ service_url }}"
+          image_path: "{{ schema }}://{{ domain }}/images/{{ service_to_copy_image }}"
+
+    - name: Append to all information
+      set_fact:
+        installed_services: "{{ installed_services + [info] }}"

@@ -65,11 +65,9 @@
 
 
     - name: Copy dashboard file
-      become: true
-      template:
-        src: unified-dashboard/dashboard.html.j2
-        dest: "{{ nginx_directory }}/public/index.html"
-        mode: '0775'
+      import_role:
+        name: dashboard
+        tasks_from: unified
       vars:
         dashboard_gitlab_clientid: "{{ dashboard_oauth_client }}"
         taiga_gitlab_clientid: "{{ taiga_gitlab_clientid }}"

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+	<title>Dashboard</title>
+
+	<style>
+        body,html {
+            margin: 0;
+            padding: 0;
+            background-color: #222222;
+        }
+
+        body * {
+            box-sizing: border-box;
+			color: #e1e1e1;
+            font-family: 'Courier New', Courier, monospace;
+		}
+
+        .container-dashboard {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            min-height: 100vh;
+        }
+
+        .container {
+            margin-right: auto;
+            margin-left: auto;
+        }
+        @media (min-width: 768px) {
+        .container { width: 750px; }
+        }
+        @media (min-width: 992px) {
+            .container { width: 970px; }
+        }
+        @media (min-width: 1200px) {
+            .container { width: 1170px; }
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .col {
+            flex: 0 0 auto;
+            width: 100%;
+            padding: 0.5rem
+        }
+        @media (min-width: 992px) {
+            .col { width: 33%; }
+        }
+
+		.link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            min-height: 25vh;
+            text-decoration: none;
+			background-color: #353535;
+			border: 1px solid gray;
+			transition: transform .2s;
+			border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+		}
+		.link:hover {
+			transform: scale(1.02);
+		}
+
+        .link-image {
+            margin-bottom: 0.5rem;
+            height: 5rem;
+        }
+        .link-title {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+	</style>
+</head>
+
+<body>
+	<div class="container-dashboard">
+		<div class="container">
+			<div class="row">
+
+                {% for service in installed_services %}
+                    <div class="col">
+                        <a href="{{ service.url }}" class="link">
+                            <div>
+                                <img src="{{ service.image_path }}" alt="" class="link-image">
+                                <h2 class="link-title">{{ service.label }}</h2>
+                                <span id="status-{{ service.label }}"></span>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+
+			</div>
+		</div>
+	</div>
+
+
+	<script>
+		$(document).ready(function() {
+            const to_check_urls = [
+                {% for service in installed_services %}
+                { label: "{{ service.label }}",  url: "{{ service.url }}" },
+                {% endfor %}
+            ];
+
+            for (const service of to_check_urls) {
+                $.ajax({ method: "GET", url: `${service.url}` })
+                    .then((res) => $(`#status-${service.label}`).html("🟢 UP"))
+                    .catch((err) => {
+                        if (err.status === 401 || err.status === 403) { $(`#status-${service.label}`).html("🟢 UP"); } // Well, it is technically up
+                        else { $(`#status-${service.label}`).html("🔴 DOWN"); }
+                    })
+            }
+		});
+	</script>
+</body>
+
+</html>

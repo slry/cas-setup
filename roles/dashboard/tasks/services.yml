@@ -1,0 +1,48 @@
+- set_fact:
+    installed_services: []
+
+
+- name: Gitlab
+  when: install["gitlab"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Gitlab"
+    service_to_copy_image: "gitlab.svg"
+    service_url: "{{ schema }}://{{ domain }}{{ gitlab_path }}"
+
+- name: Taiga
+  when: install["taiga"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Taiga"
+    service_to_copy_image: "taiga.png"
+    service_url: "{{ schema }}://{{ domain }}{{ taiga_path }}"
+
+- name: Mattermost
+  when: install["mattermost"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Mattermost"
+    service_to_copy_image: "mattermost.svg"
+    service_url: "{{ schema }}://{{ domain }}{{ mattermost_path }}"
+
+- name: Jenkins
+  when: install["jenkins"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Jenkins"
+    service_to_copy_image: "jenkins.svg"
+    service_url: "{{ schema }}://{{ domain }}{{ jenkins_path }}"
+
+- name: Sonarqube
+  when: install["sonarqube"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Sonarqube"
+    service_to_copy_image: "sonarqube.svg"
+    service_url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}"

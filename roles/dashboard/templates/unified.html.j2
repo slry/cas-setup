@@ -130,79 +130,22 @@
 
 		<div id="container-navbar-cas">
 		<div id="navbar-cas">
-			<button class="button-cas" onclick="changePage('gitlab', '{{ gitlab_path }}')">
-				<div class="logo-cas">
-					<img src="https://about.gitlab.com/images/press/press-kit-icon.svg" alt="">
-				</div>
-				<span class="extend-show">
-					Gitlab
-					<a href="{{ gitlab_path }}">
-						<div class="icon-link">
-							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
-						</div>
-					</a>
-				</span>
-			</button>
-			
+			{% for service in installed_services %}
+				<button class="button-cas" onclick="changePage('{{ service.label }}', '{{ service.url }}')">
+					<div class="logo-cas">
+						<img src="{{ service.image_path }}" alt="">
+					</div>
+					<span class="extend-show">
+						{{ service.label }}
+						<a href="{{ service.url }}">
+							<div class="icon-link">
+								<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
+							</div>
+						</a>
+					</span>
+				</button>
+			{% endfor %}
 
-			<button class="button-cas" onclick="changePage('taiga', `{{ gitlab_path }}/oauth/authorize?client_id={{ taiga_gitlab_clientid }}&state=gitlab&response_type=code&scope=read_user&redirect_uri={{ schema }}://{{ domain }}{{ taiga_path }}/login`)">
-				<div class="logo-cas">
-					<img src="https://assets.brandfolder.com/qi4c28p7/v/357207/original/icon%20taiga%20color.png" alt="">
-				</div>
-				<span class="extend-show">
-					Taiga
-					<a href="{{ taiga_path }}">
-						<div class="icon-link">
-							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
-						</div>
-					</a>
-				</span>
-			</button>
-			
-
-			<button class="button-cas" onclick="changePage('mattermost', '{{ mattermost_path }}/oauth/gitlab/login')">
-				<div class="logo-cas">
-					<img src="https://1435268659-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LorODNCmgMboJfZ7MPT%2Fsync%2F6c7ab89bca0b50a48f1d35edf13e76fd6faf5b43.svg?generation=1614726374299388&alt=media" alt="">
-				</div>
-				<span class="extend-show">
-					Mattermost
-					<a href="{{ mattermost_path }}">
-						<div class="icon-link">
-							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
-						</div>
-					</a>
-				</span>
-			</button>
-			
-
-			<button class="button-cas" onclick="changePage('jenkins', '{{ jenkins_path }}')">
-				<div class="logo-cas">
-					<img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Jenkins_logo.svg" alt="">
-				</div>
-				<span class="extend-show">
-					Jenkins
-					<a href="{{ jenkins_path }}">
-						<div class="icon-link">
-							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
-						</div>
-					</a>
-				</span>
-			</button>
-			
-
-			<button class="button-cas" onclick="changePage('sonarqube', '{{ sonarqube_path }}/sessions/init/gitlab?return_to=%2Fsonarqube%2F')">
-				<div class="logo-cas">
-					<img src="https://plugins.jetbrains.com/files/7238/132659/icon/pluginIcon.svg" alt="">
-				</div>
-				<span class="extend-show">
-					Sonarqube
-					<a href="{{ sonarqube_path }}">
-						<div class="icon-link">
-							<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 48 48"><path fill="#fff" d="M22.5 34H14q-4.15 0-7.075-2.925T4 24q0-4.15 2.925-7.075T14 14h8.5v3H14q-2.9 0-4.95 2.05Q7 21.1 7 24q0 2.9 2.05 4.95Q11.1 31 14 31h8.5Zm-6.25-8.5v-3h15.5v3ZM25.5 34v-3H34q2.9 0 4.95-2.05Q41 26.9 41 24q0-2.9-2.05-4.95Q36.9 17 34 17h-8.5v-3H34q4.15 0 7.075 2.925T44 24q0 4.15-2.925 7.075T34 34Z"/></svg>
-						</div>
-					</a>
-				</span>
-			</button>
 			
 
 			<button class="button-cas" onclick="refreshCurrentPage()">

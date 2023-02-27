@@ -10,9 +10,12 @@
   block:
   - name: Create public directory
     file:
-      path: "{{ nginx_directory }}/public"
+      path: "{{ item }}"
       state: directory
       mode: '0775'
+    loop:
+      - "{{ nginx_directory }}/public"
+      - "{{ nginx_directory }}/public/images"
 
   - name: Create secrets directory
     file:
@@ -57,8 +60,3 @@
 - name: Certbot
   include_tasks: https.yml
   when: schema == 'https'
-
-
-- name: Everything is ok
-  debug:
-    msg: "Everything looks fine. Visit {{schema}}://{{ domain }}"
