@@ -1,0 +1,18 @@
+#
+# Deletes the nginx configuration of a service
+#
+# Input variables:
+#   label           Name of the config file
+#
+
+- name: Delete nginx conf
+  become: true
+  file:
+    state: absent
+    path: "{{ nginx_directory }}/includes/{{ label }}.conf"
+  register: nginx_conf
+
+- name: Require nginx restart
+  when: nginx_conf.changed
+  set_fact:
+    should_restart_nginx: true

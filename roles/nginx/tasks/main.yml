@@ -1,10 +1,33 @@
-- name: Copy docker-compose
+- name: Create nginx directory
+  become: true
+  file:
+    path: "{{ nginx_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Create required directories
+  become: true
+  block:
+  - name: Create public directory
+    file:
+      path: "{{ nginx_directory }}/public"
+      state: directory
+      mode: '0775'
+
+  - name: Create secrets directory
+    file:
+      path: "{{ nginx_directory }}/.secrets"
+      state: directory
+      mode: '0700'
+
+
+- name: Copy dashboard file
   become: true
   template:
-    src: docker-compose.yml.j2
-    dest: "{{ nginx_directory }}/docker-compose.yml"
-    owner: root
-    mode: '0700'
+    src: dashboard.html.j2
+    dest: "{{ nginx_directory }}/public/index.html"
+    mode: '0775'
+
 
 - name: Copy nginx configuration
   become: true
@@ -15,19 +38,21 @@
     mode: '0770'
   register: nginx_conf
 
-- name: Docker compose up
-  become: true
-  community.docker.docker_compose:
-    project_src: "{{ nginx_directory }}"
-    remove_orphans: true
-  register: compose_up
 
-- name: Restart container
-  when: (nginx_conf.changed or should_restart_nginx) and not compose_up.changed
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.yml.j2"
+    service_directory: "{{ nginx_directory }}"
+
+- name: Restart container on conf changes
+  when: nginx_conf.changed or ( should_restart_nginx | default(false) )
   become: true
   community.docker.docker_compose:
     project_src: "{{ nginx_directory }}"
     restarted: true
+
 
 - name: Certbot
   include_tasks: https.yml

@@ -21,72 +21,38 @@
     - "{{ mattermost_directory }}/logs"
     - "{{ mattermost_directory }}/plugins"
     - "{{ mattermost_directory }}/bleve-indexes"
-    - "{{ mattermost_directory }}/.secrets"
 
-- name: Retreive database password
-  become: true
-  block:
-    - name: Check if password exists
-      stat:
-        path: "{{ mattermost_directory }}/.secrets/db-password.txt"
-      register: db_password_file
-    
-    - name: Generate password
-      when: not db_password_file.stat.exists
-      copy:
-        dest: "{{ mattermost_directory }}/.secrets/db-password.txt"
-        content: "{{ lookup('ansible.builtin.password', '/dev/null chars=ascii_letters,digits') }}"
-    
-    - name: Read password
-      block:
-        - slurp:
-            src: "{{ mattermost_directory }}/.secrets/db-password.txt"
-          register: db_password_slurp
-        - set_fact:
-            db_password: "{{ db_password_slurp.content | b64decode }}"
 
-- name: Copy docker-compose
-  become: true
-  template:
-    src: docker-compose.yml.j2
-    dest: "{{ mattermost_directory }}/docker-compose.yml"
-    owner: root
-    mode: '0700'
+- name: Retrieve database password
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ mattermost_directory }}"
+    secret_name: "db-password.txt"
+    create_if_missing: True
+    output_var: "db_password"
 
-- name: Docker compose up
-  become: true
-  community.docker.docker_compose:
-    project_src: "{{ mattermost_directory }}"
-    remove_orphans: true
+
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.yml.j2"
+    service_directory: "{{ mattermost_directory }}"
 
 
 - name: Copy nginx configuration
-  become: true
-  block:
-    - template:
-        src: nginx.conf.j2
-        dest: "{{ nginx_directory }}/includes/mattermost.conf"
-        owner: root
-        mode: '0700'
-      register: nginx_conf
-    - ansible.builtin.set_fact:
-        when: nginx_conf.changed
-        should_restart_nginx: true
+  ansible.builtin.import_tasks:
+    file: utilities/add_nginx_conf.yml
+  vars:
+    conf_src_path: "nginx.conf.j2"
+    label: "mattermost"
 
   
-- name: Copy backup script
-  become: true
-  template:
-    src: backup.sh.j2
-    dest: "{{ mattermost_directory }}/backup.sh"
-    mode: '0770'
-
-- name: Backup cron
-  become: true
-  ansible.builtin.cron:
-    name: Mattermost backup
-    weekday: "{{ backup_weekday }}"
-    minute: "{{ backup_minute }}"
-    hour: "{{ backup_hour }}"
-    user: root
-    job: "{{ mattermost_directory }}/backup.sh"
+- name: Plan backup
+  ansible.builtin.import_tasks:
+    file: utilities/plan_backup.yml
+  vars:
+    script_src_path: "backup.sh.j2"
+    service_directory: "{{ mattermost_directory }}"
+    cron_name: "Mattermost backup"

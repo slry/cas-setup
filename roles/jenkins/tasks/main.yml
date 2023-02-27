@@ -19,13 +19,6 @@
     - "{{ jenkins_directory }}/home"
     - "{{ jenkins_directory }}/certs"
 
-- name: Copy docker-compose
-  become: true
-  template:
-    src: docker-compose.yml.j2
-    dest: "{{ jenkins_directory }}/docker-compose.yml"
-    owner: root
-    mode: '0700'
 
 - name: Copy custom Jenkins Dockerfile
   become: true
@@ -43,40 +36,26 @@
     name: cas-server/jenkins
     source: build
 
-- name: Docker compose up
-  become: true
-  community.docker.docker_compose:
-    project_src: "{{ jenkins_directory }}"
-    remove_orphans: true
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.yml.j2"
+    service_directory: "{{ jenkins_directory }}"
 
 
 - name: Copy nginx configuration
-  become: true
-  block:
-    - template:
-        src: nginx.conf.j2
-        dest: "{{ nginx_directory }}/includes/jenkins.conf"
-        owner: root
-        mode: '0700'
-      register: nginx_conf
-    - ansible.builtin.set_fact:
-        when: nginx_conf.changed
-        should_restart_nginx: true
+  ansible.builtin.import_tasks:
+    file: utilities/add_nginx_conf.yml
+  vars:
+    conf_src_path: "nginx.conf.j2"
+    label: "jenkins"
 
   
-- name: Copy backup script
-  become: true
-  template:
-    src: backup.sh.j2
-    dest: "{{ jenkins_directory }}/backup.sh"
-    mode: '0770'
-
-- name: Backup cron
-  become: true
-  ansible.builtin.cron:
-    name: Jenkins backup
-    weekday: "{{ backup_weekday }}"
-    minute: "{{ backup_minute }}"
-    hour: "{{ backup_hour }}"
-    user: root
-    job: "{{ jenkins_directory }}/backup.sh"
+- name: Plan backup
+  ansible.builtin.import_tasks:
+    file: utilities/plan_backup.yml
+  vars:
+    script_src_path: "backup.sh.j2"
+    service_directory: "{{ jenkins_directory }}"
+    cron_name: "Jenkins backup"

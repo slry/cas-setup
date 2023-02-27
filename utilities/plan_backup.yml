@@ -1,0 +1,25 @@
+#
+# Plans a cron job for backup
+#
+# Input variables:
+#   script_src_path     Source path of the backup script to copy
+#   service_directory   Directory of the service to backup
+#   cron_name           Name of the cron job
+#
+
+- name: Copy backup script
+  become: true
+  template:
+    src: "{{ script_src_path }}"
+    dest: "{{ service_directory }}/backup.sh"
+    mode: '0770'
+
+- name: Backup cron job
+  become: true
+  ansible.builtin.cron:
+    name: "{{ cron_name }}"
+    weekday: "{{ backup_weekday }}"
+    minute: "{{ backup_minute }}"
+    hour: "{{ backup_hour }}"
+    user: root
+    job: "{{ service_directory }}/backup.sh"

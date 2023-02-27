@@ -18,7 +18,6 @@
         - "{{ sonarqube_directory }}/data"
         - "{{ sonarqube_directory }}/extensions"
         - "{{ sonarqube_directory }}/logs"
-        - "{{ sonarqube_directory }}/.secrets"
     - file:
         path: "{{ item }}"
         state: directory
@@ -29,27 +28,16 @@
         - "{{ sonarqube_directory }}/postgresql"
         - "{{ sonarqube_directory }}/postgresql_data"
 
-- name: Retreive database password
-  become: true
-  block:
-    - name: Check if password exists
-      stat:
-        path: "{{ sonarqube_directory }}/.secrets/db-password.txt"
-      register: db_password_file
-    
-    - name: Generate password
-      when: not db_password_file.stat.exists
-      copy:
-        dest: "{{ sonarqube_directory }}/.secrets/db-password.txt"
-        content: "{{ lookup('ansible.builtin.password', '/dev/null chars=ascii_letters,digits') }}"
-    
-    - name: Read password
-      block:
-        - slurp:
-            src: "{{ sonarqube_directory }}/.secrets/db-password.txt"
-          register: db_password_slurp
-        - set_fact:
-            db_password: "{{ db_password_slurp.content | b64decode }}"
+
+- name: Retrieve database password
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ sonarqube_directory }}"
+    secret_name: "db-password.txt"
+    create_if_missing: True
+    output_var: "db_password"
+
 
 - name: Set vm.max_map_count
   become: true
@@ -58,48 +46,27 @@
     value: 262144
     sysctl_set: yes
 
-- name: Copy docker-compose
-  become: true
-  template:
-    src: docker-compose.yml.j2
-    dest: "{{ sonarqube_directory }}/docker-compose.yml"
-    owner: root
-    mode: '0700'
 
-- name: Docker compose up
-  become: true
-  community.docker.docker_compose:
-    project_src: "{{ sonarqube_directory }}"
-    remove_orphans: true
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.yml.j2"
+    service_directory: "{{ sonarqube_directory }}"
 
-  
+
 - name: Copy nginx configuration
-  become: true
-  block:
-    - template:
-        src: nginx.conf.j2
-        dest: "{{ nginx_directory }}/includes/sonarqube.conf"
-        owner: root
-        mode: '0700'
-      register: nginx_conf
-    - ansible.builtin.set_fact:
-        when: nginx_conf.changed
-        should_restart_nginx: true
+  ansible.builtin.import_tasks:
+    file: utilities/add_nginx_conf.yml
+  vars:
+    conf_src_path: "nginx.conf.j2"
+    label: "sonarqube"
 
 
-- name: Copy backup script
-  become: true
-  template:
-    src: backup.sh.j2
-    dest: "{{ sonarqube_directory }}/backup.sh"
-    mode: '0770'
-
-- name: Backup cron
-  become: true
-  ansible.builtin.cron:
-    name: Sonarqube backup
-    weekday: "{{ backup_weekday }}"
-    minute: "{{ backup_minute }}"
-    hour: "{{ backup_hour }}"
-    user: root
-    job: "{{ sonarqube_directory }}/backup.sh"
+- name: Plan backup
+  ansible.builtin.import_tasks:
+    file: utilities/plan_backup.yml
+  vars:
+    script_src_path: "backup.sh.j2"
+    service_directory: "{{ sonarqube_directory }}"
+    cron_name: "Sonarqube backup"

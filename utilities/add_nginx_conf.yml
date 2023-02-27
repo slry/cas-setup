@@ -1,0 +1,36 @@
+#
+# Adds the nginx configuration of a service
+#
+# Input variables:
+#   conf_src_path   Source path of the nginx config file to copy
+#   label           Name of the config file at the destination
+#
+
+- name: Create nginx directory
+  become: true
+  file:
+    path: "{{ nginx_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Create nginx includes
+  become: true
+  file:
+    path: "{{ nginx_directory }}/includes"
+    state: directory
+    mode: '0770'
+
+
+- name: Copy nginx configuration
+  become: true
+  template:
+    src: "{{ conf_src_path }}"
+    dest: "{{ nginx_directory }}/includes/{{ label }}.conf"
+    owner: root
+    mode: '0700'
+  register: nginx_conf
+
+- name: Require nginx restart
+  when: nginx_conf.changed
+  set_fact:
+    should_restart_nginx: true

@@ -1,11 +1,24 @@
 - name: "CAS setup"
   hosts: cas-server
-  roles:
-    - docker
-    - nginx_init
-    - gitlab
-    - jenkins
-    - sonarqube
-    - taiga
-    - mattermost
-    - nginx
+
+  pre_tasks:
+    - name: Install Docker
+      import_role:
+        name: docker
+
+
+  tasks:
+    - name: Starting services
+      include_role:
+        name: "{{ service_item.key }}"
+        tasks_from: "{{ 'main' if service_item.value else 'stop' }}"
+      loop: "{{ install | dict2items }}"
+      loop_control:
+        loop_var: service_item
+
+
+  post_tasks:
+    - name: Start nginx
+      import_role:
+        name: nginx
+        tasks_from: main

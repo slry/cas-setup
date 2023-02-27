@@ -13,122 +13,84 @@
   loop:
     - "{{ taiga_directory }}/db-data"
     - "{{ taiga_directory }}/media-data"
-    - "{{ taiga_directory }}/.secrets"
 
 
-- name: Retreive passwords
-  become: true
+- name: Retrieve passwords
   block:
     - name: Database/RabbitMQ password
-      block:
-      - name: Check if password exists
-        stat:
-          path: "{{ taiga_directory }}/.secrets/password.txt"
-        register: password_file
-      - name: Generate password
-        when: not password_file.stat.exists
-        copy:
-          dest: "{{ taiga_directory }}/.secrets/password.txt"
-          content: "{{ lookup('ansible.builtin.password', '/dev/null chars=ascii_letters,digits') }}"
-    - name: Read password
-      block:
-        - slurp:
-            src: "{{ taiga_directory }}/.secrets/password.txt"
-          register: db_password_slurp
-        - set_fact:
-            password: "{{ db_password_slurp.content | b64decode }}"
+      ansible.builtin.import_tasks:
+        file: utilities/read_secret.yml
+      vars:
+        service_directory: "{{ taiga_directory }}"
+        secret_name: "password.txt"
+        create_if_missing: True
+        output_var: "password"
 
     - name: Taiga secret
-      block:
-      - name: Check if secret exists
-        stat:
-          path: "{{ taiga_directory }}/.secrets/secret.txt"
-        register: secret_file
-      - name: Generate secret
-        when: not secret_file.stat.exists
-        copy:
-          dest: "{{ taiga_directory }}/.secrets/secret.txt"
-          content: "{{ lookup('ansible.builtin.password', '/dev/null chars=ascii_letters,digits') }}"
-      - name: Read secret
-        block:
-          - slurp:
-              src: "{{ taiga_directory }}/.secrets/secret.txt"
-            register: db_password_slurp
-          - set_fact:
-              secret: "{{ db_password_slurp.content | b64decode }}"
+      ansible.builtin.import_tasks:
+        file: utilities/read_secret.yml
+      vars:
+        service_directory: "{{ taiga_directory }}"
+        secret_name: "secret.txt"
+        create_if_missing: True
+        output_var: "secret"
 
 
 - name: Retreive Gitlab SSO tokens
   become: true
   block:
     - name: Client id
-      block:
-        - slurp:
-            src: "{{ taiga_directory }}/.secrets/gitlab_sso_client.txt"
-          failed_when: false
-          register: slurp_res
-        - set_fact:
-            taiga_gitlab_clientid: "{{ slurp_res.content | default('') | b64decode }}"
-            
+      ansible.builtin.import_tasks:
+        file: utilities/read_secret.yml
+      vars:
+        service_directory: "{{ taiga_directory }}"
+        secret_name: "gitlab_sso_client.txt"
+        create_if_missing: False
+        output_var: "taiga_gitlab_clientid"
+
     - name: Secret
       block:
-        - slurp:
-            src: "{{ taiga_directory }}/.secrets/gitlab_sso_secret.txt"
-          failed_when: false
-          register: slurp_res
-        - set_fact:
-            taiga_gitlab_clientsecret: "{{ slurp_res.content | default('') | b64decode | replace('$', '$$') }}"
-      
+        - name: "Read SSO secret"
+          ansible.builtin.import_tasks:
+            file: utilities/read_secret.yml
+          vars:
+            service_directory: "{{ taiga_directory }}"
+            secret_name: "gitlab_sso_secret.txt"
+            create_if_missing: False
+            output_var: "taiga_gitlab_clientsecret"
+        - name: "Escape SSO secret"
+          set_fact:
+            taiga_gitlab_clientsecret: "{{ taiga_gitlab_clientsecret | replace('$', '$$') }}"
 
-- name: Copy nginx configuration
+
+- name: Copy internal nginx configuration
   become: true
   template:
     src: taiga.conf
     dest: "{{ taiga_directory }}/taiga.conf"
     mode: '0770'
 
-- name: Copy docker-compose
-  become: true
-  template:
-    src: docker-compose.yml.j2
-    dest: "{{ taiga_directory }}/docker-compose.yml"
-    owner: root
-    mode: '0700'
 
-- name: Docker compose up
-  become: true
-  community.docker.docker_compose:
-    project_src: "{{ taiga_directory }}"
-    remove_orphans: true
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.yml.j2"
+    service_directory: "{{ taiga_directory }}"
 
 
 - name: Copy nginx configuration
-  become: true
-  block:
-    - template:
-        src: nginx.conf.j2
-        dest: "{{ nginx_directory }}/includes/taiga.conf"
-        owner: root
-        mode: '0700'
-      register: nginx_conf
-    - ansible.builtin.set_fact:
-        when: nginx_conf.changed
-        should_restart_nginx: true
+  ansible.builtin.import_tasks:
+    file: utilities/add_nginx_conf.yml
+  vars:
+    conf_src_path: "nginx.conf.j2"
+    label: "taiga"
 
 
-- name: Copy backup script
-  become: true
-  template:
-    src: backup.sh.j2
-    dest: "{{ taiga_directory }}/backup.sh"
-    mode: '0770'
-
-- name: Backup cron
-  become: true
-  ansible.builtin.cron:
-    name: Taiga backup
-    weekday: "{{ backup_weekday }}"
-    minute: "{{ backup_minute }}"
-    hour: "{{ backup_hour }}"
-    user: root
-    job: "{{ taiga_directory }}/backup.sh"
+- name: Plan backup
+  ansible.builtin.import_tasks:
+    file: utilities/plan_backup.yml
+  vars:
+    script_src_path: "backup.sh.j2"
+    service_directory: "{{ taiga_directory }}"
+    cron_name: "Taiga backup"

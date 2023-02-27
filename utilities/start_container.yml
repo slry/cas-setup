@@ -1,0 +1,21 @@
+#
+# Copies and starts a docker compose file
+#
+# Input variables:
+#   docker_compose_src_path     Source path of the docker compose file to copy
+#   service_directory           Directory of the service to start
+#
+
+- name: Copy docker-compose.yml
+  become: true
+  template:
+    src: "{{ docker_compose_src_path }}"
+    dest: "{{ service_directory }}/docker-compose.yml"
+    owner: root
+    mode: '0700'
+
+- name: Docker compose up
+  become: true
+  community.docker.docker_compose:
+    project_src: "{{ service_directory }}"
+    remove_orphans: true

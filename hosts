@@ -11,6 +11,17 @@ all:
       email: ""                               # Email for Let's Encrypt
 
 
+      #
+      # Services to install
+      #
+      install:
+        gitlab:       True
+        taiga:        True
+        mattermost:   True
+        jenkins:      True
+        sonarqube:    True
+
+
       # Name of the Docker network
       docker_network: casnet
 
