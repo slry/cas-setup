@@ -5,16 +5,16 @@
   vars_prompt:
 
     - name: sonarqube_username
-      prompt: Sonarqube administrator's username
+      prompt: Sonarqube administrator's username (if needed)
       private: false
     - name: sonarqube_password
-      prompt: Sonarqube administrator's password
-
+      prompt: Sonarqube administrator's password (if needed)
+    
     - name: mattermost_username
-      prompt: Mattermost administrator's username
+      prompt: Mattermost administrator's username (if needed)
       private: false
     - name: mattermost_password
-      prompt: Mattermost administrator's password
+      prompt: Mattermost administrator's password (if needed)
 
 
   tasks:
@@ -32,16 +32,22 @@
 
 
     - name: Setup SSO in Taiga
-      import_tasks:
-        file: ./sso/taiga.yml
+      when: install["taiga"]
+      include_role:
+        name: taiga
+        tasks_from: sso
 
     - name: Setup SSO in Sonarqube
-      import_tasks:
-        file: ./sso/sonarqube.yml
+      when: install["sonarqube"]
+      include_role:
+        name: sonarqube
+        tasks_from: sso
 
     - name: Setup SSO in Mattermost
-      import_tasks:
-        file: ./sso/mattermost.yml
+      when: install["mattermost"]
+      include_role:
+        name: mattermost
+        tasks_from: sso
 
 
     - name: "Remove Gitlab root Access token"
