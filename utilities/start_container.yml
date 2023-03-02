@@ -4,6 +4,7 @@
 # Input variables:
 #   docker_compose_src_path     Source path of the docker compose file to copy
 #   service_directory           Directory of the service to start
+#   build                       If the image needs to be always builded
 #
 
 - name: Copy docker-compose.yml
@@ -19,3 +20,4 @@
   community.docker.docker_compose:
     project_src: "{{ service_directory }}"
     remove_orphans: true
+    build: "{{ build | default(false) }}"
