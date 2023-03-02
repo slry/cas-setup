@@ -43,6 +43,7 @@ all:
       gitlab_directory: /cas/gitlab
       gitlab_path: /gitlab
       gitlab_ssh_port: 2222
+      gitlab_registry_port: 5050
 
       sonarqube_directory: /cas/sonarqube
       sonarqube_path: /sonarqube
