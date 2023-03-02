@@ -1,0 +1,57 @@
+- name: Create Logger directory
+  become: true
+  file:
+    path: "{{ logger_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Clone repository
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/cas-agile/dashboard-logger
+    dest: "{{ logger_directory }}"
+    update: false
+
+
+- name: Retrieve database password
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ logger_directory }}"
+    secret_name: "db-password.txt"
+    create_if_missing: True
+    output_var: "db_password"
+
+- name: Retrieve Flask secret
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ logger_directory }}"
+    secret_name: "secret.txt"
+    create_if_missing: True
+    output_var: "flask_secret"
+
+
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.yml.j2"
+    service_directory: "{{ logger_directory }}"
+
+
+- name: Copy nginx configuration
+  ansible.builtin.import_tasks:
+    file: utilities/add_nginx_conf.yml
+  vars:
+    conf_src_path: "nginx.conf.j2"
+    label: "logger"
+
+
+- name: Plan backup
+  ansible.builtin.import_tasks:
+    file: utilities/plan_backup.yml
+  vars:
+    script_src_path: "backup.sh.j2"
+    service_directory: "{{ logger_directory }}"
+    cron_name: "Logger backup"

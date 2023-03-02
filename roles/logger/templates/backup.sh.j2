@@ -1,0 +1,21 @@
+#! /bin/bash
+
+working_dir=/tmp/casbackup/logger
+mkdir -p $working_dir
+mkdir -p {{backup_directory}}/logger
+
+# DB
+docker exec cas-logger-db mongodump --username root --password {{ db_password }} --authenticationDatabase admin --db logger_db --out /dump
+docker cp cas-logger-db:/dump $working_dir/.
+ 
+timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+tar_name="logger_${timestamp}.tar.gz"
+cd $working_dir
+tar -czf {{backup_directory}}/logger/$tar_name ../logger
+
+# Cleaning
+rm -rf $working_dir
+sudo docker exec -t cas-logger-db sh -c "rm -rf /dump"
+
+# Cleaning old backups
+find {{backup_directory}}/logger -mindepth 1 -mtime +7 -delete

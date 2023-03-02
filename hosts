@@ -24,6 +24,7 @@ all:
         mattermost:   True
         jenkins:      True
         sonarqube:    True
+        logger:       True
 
 
       # Name of the Docker network
@@ -58,6 +59,10 @@ all:
       # For Gitlab SSO
       taiga_gitlab_clientid: ""
       taiga_gitlab_clientsecret: ""
+
+      logger_directory: /cas/logger
+      logger_front_path: /dashboard-logger
+      logger_back_path: /logger
 
 
       ##############################

@@ -3,7 +3,7 @@
 
 
 - name: Gitlab
-  when: install["gitlab"]
+  when: ("gitlab" in install) and install["gitlab"]
   import_tasks:
     file: utilities/set_service.yml
   vars:
@@ -12,7 +12,7 @@
     service_url: "{{ schema }}://{{ domain }}{{ gitlab_path }}"
 
 - name: Taiga
-  when: install["taiga"]
+  when: ("taiga" in install) and install["taiga"]
   import_tasks:
     file: utilities/set_service.yml
   vars:
@@ -21,7 +21,7 @@
     service_url: "{{ schema }}://{{ domain }}{{ taiga_path }}"
 
 - name: Mattermost
-  when: install["mattermost"]
+  when: ("mattermost" in install) and install["mattermost"]
   import_tasks:
     file: utilities/set_service.yml
   vars:
@@ -30,7 +30,7 @@
     service_url: "{{ schema }}://{{ domain }}{{ mattermost_path }}"
 
 - name: Jenkins
-  when: install["jenkins"]
+  when: ("jenkins" in install) and install["jenkins"]
   import_tasks:
     file: utilities/set_service.yml
   vars:
@@ -39,10 +39,19 @@
     service_url: "{{ schema }}://{{ domain }}{{ jenkins_path }}"
 
 - name: Sonarqube
-  when: install["sonarqube"]
+  when: ("sonarqube" in install) and install["sonarqube"]
   import_tasks:
     file: utilities/set_service.yml
   vars:
     service_label: "Sonarqube"
     service_to_copy_image: "sonarqube.svg"
     service_url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}"
+  
+- name: Logger
+  when: ("logger" in install) and install["logger"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Logger"
+    service_to_copy_image: "logger.png"
+    service_url: "{{ schema }}://{{ domain }}{{ logger_front_path }}"
