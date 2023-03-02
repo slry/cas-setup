@@ -56,9 +56,6 @@ all:
 
       taiga_directory: /cas/taiga
       taiga_path: /taiga
-      # For Gitlab SSO
-      taiga_gitlab_clientid: ""
-      taiga_gitlab_clientsecret: ""
 
       logger_directory: /cas/logger
       logger_front_path: /dashboard-logger
