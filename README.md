@@ -50,6 +50,14 @@ The `root` user temporary password is located in the container:
 docker exec cas-gitlab cat /etc/gitlab/initial_root_password
 ```
 
+#### Gitlab runner
+To enable Gitlab runner, run the following playbook:
+```
+ansible-playbook runner.yml -i hosts
+```
+It will prompt for the name of the runner and the registration token (it can be generated in the `domain/gitlab/admin/runners` page).
+
+
 ### Jenkins 
 URL: `http(s)://domain/jenkins`\
 The initial password is located in the container:

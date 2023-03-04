@@ -1,0 +1,19 @@
+- name: Gitlab runner setup
+  hosts: cas-server
+
+
+  vars_prompt:
+
+    - name: runner_name
+      prompt: Runner name
+      private: false
+    - name: runner_token
+      prompt: Runner registration token
+      private: true
+
+
+  tasks:
+    - name: Setup Gitlab Runner
+      include_role:
+        name: gitlab
+        tasks_from: runner

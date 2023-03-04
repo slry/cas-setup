@@ -1,0 +1,22 @@
+- name: Create Gitlab Runner directory
+  become: true
+  file:
+    path: "{{ gitlab_directory }}/runner"
+    state: directory
+    mode: '0770'
+
+- name: Create required directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ gitlab_directory }}/runner/config"
+
+
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose-runner.yml.j2"
+    service_directory: "{{ gitlab_directory }}/runner"

@@ -1,0 +1,56 @@
+version: "3.5"
+
+services:
+  dind:
+    image: docker:dind
+    container_name: cas-gitlab-dind
+    hostname: gitlab-dind
+    restart: unless-stopped
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    command:
+      - --storage-driver=overlay2
+    networks:
+      - cas-network
+      
+  runner:
+    image: gitlab/gitlab-runner
+    container_name: cas-gitlab-runner
+    hostname: gitlab-runner
+    restart: unless-stopped
+    depends_on:
+      - dind
+    environment:
+      - DOCKER_HOST=tcp://gitlab-dind:2375
+    volumes:
+      - ./config:/etc/gitlab-runner:z
+    networks:
+      - cas-network
+
+  register-runner:
+    restart: 'no'
+    image: gitlab/gitlab-runner
+    depends_on:
+      - dind
+    environment:
+      CI_SERVER_URL: {{ schema }}://{{ domain }}{{ gitlab_path }}
+      REGISTRATION_TOKEN: {{ runner_token }}
+    command:
+      - register
+      - --non-interactive
+      - --locked=false
+      - --name={{ runner_name }}
+      - --executor=docker
+      - --docker-image=docker:dind
+      - --docker-volumes=/var/run/docker.sock:/var/run/docker.sock
+    volumes:
+      - ./config:/etc/gitlab-runner:z
+    networks:
+      - cas-network
+
+
+networks:
+  cas-network:
+    external: true
+    name: {{ docker_network }}
