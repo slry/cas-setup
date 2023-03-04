@@ -12,6 +12,7 @@
         info:
           label: "{{ service_label }}"
           url: "{{ service_url }}"
+          unified_dashboard_url: "{{ unified_dashboard_url }}"
           image_path: "{{ schema }}://{{ domain }}/images/{{ service_to_copy_image }}"
 
     - name: Append to all information

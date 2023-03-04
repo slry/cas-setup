@@ -10,6 +10,7 @@
     service_label: "Gitlab"
     service_to_copy_image: "gitlab.svg"
     service_url: "{{ schema }}://{{ domain }}{{ gitlab_path }}"
+    unified_dashboard_url: "{{ schema }}://{{ domain }}{{ gitlab_path }}"
 
 - name: Taiga
   when: ("taiga" in install) and install["taiga"]
@@ -19,6 +20,7 @@
     service_label: "Taiga"
     service_to_copy_image: "taiga.png"
     service_url: "{{ schema }}://{{ domain }}{{ taiga_path }}"
+    unified_dashboard_url: "{{ schema }}://{{ domain }}{{ gitlab_path }}/oauth/authorize?client_id={{ taiga_gitlab_clientid }}&state=gitlab&response_type=code&scope=read_user&redirect_uri={{ schema }}://{{ domain }}{{ taiga_path }}/login"
 
 - name: Mattermost
   when: ("mattermost" in install) and install["mattermost"]
@@ -28,6 +30,7 @@
     service_label: "Mattermost"
     service_to_copy_image: "mattermost.svg"
     service_url: "{{ schema }}://{{ domain }}{{ mattermost_path }}"
+    unified_dashboard_url: "{{ schema }}://{{ domain }}{{ mattermost_path }}/oauth/gitlab/login"
 
 - name: Jenkins
   when: ("jenkins" in install) and install["jenkins"]
@@ -37,6 +40,7 @@
     service_label: "Jenkins"
     service_to_copy_image: "jenkins.svg"
     service_url: "{{ schema }}://{{ domain }}{{ jenkins_path }}"
+    unified_dashboard_url: "{{ schema }}://{{ domain }}{{ jenkins_path }}"
 
 - name: Sonarqube
   when: ("sonarqube" in install) and install["sonarqube"]
@@ -46,6 +50,7 @@
     service_label: "Sonarqube"
     service_to_copy_image: "sonarqube.svg"
     service_url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}"
+    unified_dashboard_url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/sessions/init/gitlab?return_to=%2Fsonarqube%2F"
   
 - name: Logger
   when: ("logger" in install) and install["logger"]
@@ -55,3 +60,4 @@
     service_label: "Logger"
     service_to_copy_image: "logger.png"
     service_url: "{{ schema }}://{{ domain }}{{ logger_front_path }}"
+    unified_dashboard_url: "{{ schema }}://{{ domain }}{{ logger_front_path }}"

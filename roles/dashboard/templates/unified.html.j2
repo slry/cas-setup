@@ -131,7 +131,7 @@
 		<div id="container-navbar-cas">
 		<div id="navbar-cas">
 			{% for service in installed_services %}
-				<button class="button-cas" onclick="changePage('{{ service.label }}', '{{ service.url }}')">
+				<button class="button-cas" onclick="changePage('{{ service.label }}', '{{ service.unified_dashboard_url }}')">
 					<div class="logo-cas">
 						<img src="{{ service.image_path }}" alt="">
 					</div>
