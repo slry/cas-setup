@@ -55,7 +55,7 @@ To enable Gitlab runner, run the following playbook:
 ```
 ansible-playbook runner.yml -i hosts
 ```
-It will prompt for the name of the runner and the registration token (it can be generated in the `domain/gitlab/admin/runners` page).
+It will prompt for the name of the runner and the registration token (it can be generated at the `http(s)://domain/gitlab/admin/runners` page).
 
 
 ### Jenkins 
