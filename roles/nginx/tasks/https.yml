@@ -28,8 +28,15 @@
         restarted: true
 
     - name: Request a certificate
+      when: email != ""
       become: true
       command: docker compose -f "{{ nginx_directory }}/docker-compose.yml" run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ --non-interactive --email {{ email }} -d {{ domain }} --agree-tos
+  
+    - name: Request a certificate (without email)
+      when: email == ""
+      become: true
+      command: docker compose -f "{{ nginx_directory }}/docker-compose.yml" run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ --non-interactive --register-unsafely-without-email -d {{ domain }} --agree-tos
+
   when: not stat_privkey.stat.exists or not stat_fullchain.stat.exists
 
 - name: Add certificates to nginx

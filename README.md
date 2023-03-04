@@ -9,7 +9,7 @@ Included software are [Gitlab](https://about.gitlab.com/), [Taiga](https://www.t
 ## Installation
 
 ### Prerequisites
-- A Debian server with SSH and root access
+- A Debian or Ubuntu server with SSH and root access
 - A machine with Ansible (may also be the server itself)
   ```
   # To install Ansible
