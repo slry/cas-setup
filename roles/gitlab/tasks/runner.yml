@@ -10,8 +10,10 @@
   file:
     path: "{{ item }}"
     state: directory
+    mode: '0770'
   loop:
     - "{{ gitlab_directory }}/runner/config"
+    - "{{ gitlab_directory }}/runner/cert"
 
 
 - name: Start container

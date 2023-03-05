@@ -8,7 +8,9 @@ services:
     restart: unless-stopped
     privileged: true
     environment:
-      DOCKER_TLS_CERTDIR: ""
+      DOCKER_TLS_CERTDIR: "/certs"
+    volumes:
+      - {{ gitlab_directory }}/runner/cert:/certs/client
     command:
       - --storage-driver=overlay2
     networks:
@@ -22,9 +24,12 @@ services:
     depends_on:
       - dind
     environment:
-      - DOCKER_HOST=tcp://gitlab-dind:2375
+      DOCKER_HOST: tcp://gitlab-dind:2376
+      DOCKER_CERT_PATH: /certs/client
+      DOCKER_TLS_VERIFY: 1
     volumes:
       - ./config:/etc/gitlab-runner:z
+      - {{ gitlab_directory }}/runner/cert:/certs/client:ro
     networks:
       - cas-network
 
