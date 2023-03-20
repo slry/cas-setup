@@ -187,6 +187,9 @@
 		});
 
 		(function() {
+			// Prevents iframe looping
+			if ( new URL(window.location.href).search !== "" ) { return; }
+
 			// Handles login throught Gitlab SSO
 			document.querySelector("#iframe-login").addEventListener("load", () => {
 				// Gitlab SSO redirected back (with some parameters in the URL that will be ignored), which means that the user has logged.
