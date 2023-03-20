@@ -188,7 +188,10 @@
 
 		(function() {
 			// Prevents iframe looping
-			if ( new URL(window.location.href).search !== "" ) { return; }
+			if ( new URL(window.location.href).search !== "" ) { 
+				document.querySelector("#container-login").innerHTML = "";
+				return; 
+			}
 
 			// Handles login throught Gitlab SSO
 			document.querySelector("#iframe-login").addEventListener("load", () => {
