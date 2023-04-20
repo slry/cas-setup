@@ -1,0 +1,12 @@
+- name: Stopping Git Dashboard
+  become: true
+  ignore_errors: true
+  community.docker.docker_compose:
+    project_src: "{{ git_dashboard_directory }}"
+    stopped: true
+
+- name: Delete nginx conf
+  ansible.builtin.import_tasks:
+    file: utilities/delete_nginx_conf.yml
+  vars:
+    label: "git_dashboard"

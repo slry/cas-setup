@@ -1,0 +1,60 @@
+- name: Retreive Gitlab SSO tokens
+  become: true
+  block:
+    - name: Client id
+      block:
+        - slurp:
+            src: "{{ git_dashboard_directory }}/.secrets/gitlab_sso_client.txt"
+          failed_when: false
+          register: slurp_res
+        - set_fact:
+            oauth_client: "{{ slurp_res.content | default('') | b64decode }}"
+            
+    - name: Secret
+      block:
+        - slurp:
+            src: "{{ git_dashboard_directory }}/.secrets/gitlab_sso_secret.txt"
+          failed_when: false
+          register: slurp_res
+        - set_fact:
+            oauth_secret: "{{ slurp_res.content | default('') | b64decode }}"
+
+
+- name: Create OAuth tokens
+  when: (oauth_secret == '') or (oauth_client == '')
+  block:
+    - name: Create a Gitlab OAuth application
+      ansible.builtin.uri:
+        url: "{{ schema }}://{{ domain }}{{ gitlab_path }}/api/v4/applications"
+        method: POST
+        headers:
+          PRIVATE-TOKEN: "{{ gitlab_access_token }}"
+        body_format: json
+        body:
+          name: "Git dashboard"
+          redirect_uri: "{{ schema }}://{{ domain }}{{ git_dashboard_path }}/api/gitlab/callback"
+          scopes: "api"
+        status_code: 201
+      register: gitlab_oauth
+    
+    - name: Save tokens
+      become: true
+      block:
+        - name: Client id
+          copy:
+            dest: "{{ git_dashboard_directory }}/.secrets/gitlab_sso_client.txt"
+            content: "{{ gitlab_oauth.json.application_id }}"
+        - name: Secret
+          copy:
+            dest: "{{ git_dashboard_directory }}/.secrets/gitlab_sso_secret.txt"
+            content: "{{ gitlab_oauth.json.secret }}"
+
+    - name: Retreive tokens
+      set_fact:
+        oauth_client: "{{ gitlab_oauth.json.application_id }}"
+        oauth_secret: "{{ gitlab_oauth.json.secret }}"
+
+
+- name: Restart Git Dashboard
+  import_role:
+    name: git_dashboard

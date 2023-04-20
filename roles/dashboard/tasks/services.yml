@@ -61,3 +61,13 @@
     service_to_copy_image: "logger.png"
     service_url: "{{ schema }}://{{ domain }}{{ logger_front_path }}"
     unified_dashboard_url: "{{ schema }}://{{ domain }}{{ logger_front_path }}"
+
+- name: Git Dashboard
+  when: ("git_dashboard" in install) and install["git_dashboard"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Git Dashboard"
+    service_to_copy_image: "git_dashboard.png"
+    service_url: "{{ schema }}://{{ domain }}{{ git_dashboard_path }}"
+    unified_dashboard_url: "{{ schema }}://{{ domain }}{{ git_dashboard_path }}/api/gitlab"

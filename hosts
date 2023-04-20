@@ -10,7 +10,7 @@ all:
       domain: example.org                     # Domain or IP of the server
       email: ""                               # Email for Let's Encrypt
 
-      distro: "ubuntu" # debian or ubuntu
+      distro: "debian" # debian or ubuntu
 
       ##############################
       #
@@ -20,12 +20,13 @@ all:
       #
       ##############################
       install:
-        gitlab:       True
-        taiga:        True
-        mattermost:   True
-        jenkins:      True
-        sonarqube:    True
-        logger:       True
+        gitlab:         True
+        taiga:          True
+        mattermost:     True
+        jenkins:        True
+        sonarqube:      True
+        logger:         True
+        git_dashboard:  True
 
 
       # Name of the Docker network
@@ -62,6 +63,9 @@ all:
       logger_directory: /cas/logger
       logger_front_path: /dashboard-logger
       logger_back_path: /logger
+      
+      git_dashboard_directory: /cas/git_dashboard
+      git_dashboard_path: /metrics
 
 
       ##############################

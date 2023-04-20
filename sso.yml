@@ -49,6 +49,12 @@
         name: mattermost
         tasks_from: sso
 
+    - name: Setup SSO in Git Dashboard
+      when: install["git_dashboard"]
+      include_role:
+        name: git_dashboard
+        tasks_from: sso
+
 
     - name: "Remove Gitlab root Access token"
       become: true

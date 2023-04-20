@@ -1,0 +1,65 @@
+- name: Create Git Dashboard directory
+  become: true
+  file:
+    path: "{{ git_dashboard_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Clone repository
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/cas-agile/git-dashboard
+    dest: "{{ git_dashboard_directory }}"
+    update: false
+
+- name: Retrieve database password
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ git_dashboard_directory }}"
+    secret_name: "db-password.txt"
+    create_if_missing: True
+    output_var: "db_password"
+
+- name: Retreive Gitlab SSO tokens
+  become: true
+  block:
+    - name: Client id
+      ansible.builtin.import_tasks:
+        file: utilities/read_secret.yml
+      vars:
+        service_directory: "{{ git_dashboard_directory }}"
+        secret_name: "gitlab_sso_client.txt"
+        create_if_missing: False
+        output_var: "git_dashboard_gitlab_clientid"
+
+    - name: Secret
+      block:
+        - name: "Read SSO secret"
+          ansible.builtin.import_tasks:
+            file: utilities/read_secret.yml
+          vars:
+            service_directory: "{{ git_dashboard_directory }}"
+            secret_name: "gitlab_sso_secret.txt"
+            create_if_missing: False
+            output_var: "git_dashboard_gitlab_secret"
+        - name: "Escape SSO secret"
+          set_fact:
+            git_dashboard_gitlab_secret: "{{ git_dashboard_gitlab_secret | replace('$', '$$') }}"
+
+
+- name: Start container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.yml.j2"
+    service_directory: "{{ git_dashboard_directory }}"
+    build: true
+
+
+- name: Copy nginx configuration
+  ansible.builtin.import_tasks:
+    file: utilities/add_nginx_conf.yml
+  vars:
+    conf_src_path: "nginx.conf.j2"
+    label: "git_dashboard"
