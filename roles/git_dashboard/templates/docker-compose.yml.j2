@@ -14,6 +14,7 @@ services:
       - mongo
     volumes:
       - "/cas-dashboard/node_modules"
+      - "./videos:/cas-dashboard/videos"
     environment:
       PORT: 80
       MONGO_URL: "mongodb://root:{{ db_password }}@git-dashboard-db/git-dashboard?authSource=admin"
@@ -21,6 +22,9 @@ services:
       GITLAB_SSO_CLIENT: "{{ git_dashboard_gitlab_clientid }}"
       GITLAB_SSO_SECRET: "{{ git_dashboard_gitlab_secret }}"
       TMP_DIR: "/tmp"
+      VIDEO_DIR: "/cas-dashboard/videos"
+      GITINSPECTOR_CACHE_LIFE: "30d"
+      GOURCE_CACHE_LIFE: "7d"
     networks:
       - cas-network
 
