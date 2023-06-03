@@ -64,4 +64,4 @@
         minute: "0"
         hour: "0"
         day: "1"
-        job: "docker compose -f '{{ nginx_directory }}/docker-compose.yml' run --rm  certbot renew"
+        job: "docker compose -f '{{ nginx_directory }}/docker-compose.yml' run --rm  certbot renew; docker compose -f '{{ nginx_directory }}//docker-compose.yml' restart"
