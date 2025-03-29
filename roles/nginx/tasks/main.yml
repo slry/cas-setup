@@ -52,9 +52,9 @@
 - name: Restart container on conf changes
   when: nginx_conf.changed or ( should_restart_nginx | default(false) )
   become: true
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ nginx_directory }}"
-    restarted: true
+    state: restarted
 
 
 - name: Certbot

@@ -3,7 +3,7 @@
   ignore_errors: true
   community.docker.docker_compose:
     project_src: "{{ git_dashboard_directory }}"
-    stopped: true
+    state: absent
 
 - name: Delete nginx conf
   ansible.builtin.import_tasks:

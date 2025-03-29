@@ -23,15 +23,15 @@
 
     - name: Restart nginx
       become: true
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ nginx_directory }}"
-        restarted: true
+        state: restarted
 
     - name: Request a certificate
       when: email != ""
       become: true
       command: docker compose -f "{{ nginx_directory }}/docker-compose.yml" run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ --non-interactive --email {{ email }} -d {{ domain }} --agree-tos
-  
+
     - name: Request a certificate (without email)
       when: email == ""
       become: true
@@ -53,9 +53,9 @@
 
     - name: Restart nginx
       become: true
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ nginx_directory }}"
-        restarted: true
+        state: restarted
 
     - name: Renew cron
       become: true
