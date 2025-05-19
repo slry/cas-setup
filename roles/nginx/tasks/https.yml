@@ -8,6 +8,11 @@
         path: "{{ nginx_directory }}/certbot/conf/live/{{ domain }}/fullchain.pem"
       become: true
       register: stat_fullchain
+    - stat:
+        path: "{{ nginx_directory}}/.secrets/cloudflare.ini"
+      become: true
+      register: stat_cloudflare
+
 
 - name: Create a new certificate
   block:
@@ -27,15 +32,29 @@
         project_src: "{{ nginx_directory }}"
         state: restarted
 
+    - name: Create Cloudflare credentials file
+      when: dns_cloudflare_api_token != "" and not stat_cloudflare.stat.exists
+      become: true
+      template:
+        src: cloudflare.ini.j2
+        dest: "{{ nginx_directory }}/.secrets/cloudflare.ini"
+        owner: root
+        mode: '0770'
+
     - name: Request a certificate
-      when: email != ""
+      when: email != "" and dns_cloudflare_api_token == ""
       become: true
       command: docker compose -f "{{ nginx_directory }}/docker-compose.yml" run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ --non-interactive --email {{ email }} -d {{ domain }} --agree-tos
 
     - name: Request a certificate (without email)
-      when: email == ""
+      when: email == "" and dns_cloudflare_api_token == ""
       become: true
       command: docker compose -f "{{ nginx_directory }}/docker-compose.yml" run --rm  certbot certonly --webroot --webroot-path /var/www/certbot/ --non-interactive --register-unsafely-without-email -d {{ domain }} --agree-tos
+
+    - name: Request a certificate (Cloudflare)
+      when: email != "" and dns_cloudflare_api_token != "" and not stat_cloudflare.stat.exists
+      become: true
+      command: docker compose -f "{{ nginx_directory }}/docker-compose.yml" run --rm  certbot-cloudflare certonly --non-interactive --email {{ email }} -d {{ domain }} -d *.{{ domain }} --agree-tos --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/.secrets/cloudflare.ini
 
   when: not stat_privkey.stat.exists or not stat_fullchain.stat.exists
 

@@ -1,0 +1,13 @@
+import jwt
+
+secret = "{{ jwt_secret }}"
+header = {{ jwt_header | to_nice_json }}
+payload = {{ jwt_payload | to_nice_json }}
+
+# Unfortunate limitation of j2 templates
+payload['exp'] = int(payload['exp'])
+payload['iat'] = int(payload['iat'])
+
+token = jwt.encode(payload, secret, algorithm="HS256", headers=header)
+
+print(token)

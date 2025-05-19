@@ -1,7 +1,7 @@
 - name: Stopping Git Dashboard
   become: true
   ignore_errors: true
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ git_dashboard_directory }}"
     state: absent
 

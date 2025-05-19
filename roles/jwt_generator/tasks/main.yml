@@ -1,0 +1,27 @@
+#
+# Generates a JWT token using the provided secret key and payload.
+#
+# Input variables:
+#   jwt_secret    The secret key used to sign the JWT token
+#   jwt_header    The header to be included in the JWT token
+#   jwt_payload   The payload to be included in the JWT token
+#   output_var    The name of the variable to store the generated JWT token
+
+- name: Ensure PyJWT is installed
+  ansible.builtin.pip:
+    name: PyJWT
+    state: present
+
+- name: Generate JWT token using Python script
+  template:
+    src: generate_jwt.py.j2
+    dest: /tmp/generate_jwt.py
+    mode: '0755'
+
+- name: Run JWT generator script
+  command: python3 /tmp/generate_jwt.py
+  register: jwt_output
+
+- name: Set generated JWT token as fact
+  set_fact:
+    "{{ output_var }}": "{{ jwt_output.stdout }}"

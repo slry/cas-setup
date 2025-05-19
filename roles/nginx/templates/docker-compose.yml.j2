@@ -21,13 +21,23 @@ services:
     networks:
       - cas-network
  
-{% if schema == 'https' %}
+{% if schema == 'https' and dns_cloudflare_api_token is not defined %}
   certbot:
     image: certbot/certbot:latest
     container_name: cas-certbot
     volumes:
       - {{ nginx_directory }}/certbot/www/:/var/www/certbot/:rw
       - {{ nginx_directory }}/certbot/conf/:/etc/letsencrypt/:rw
+    networks:
+      - cas-network
+{% elif schema == 'https' and dns_cloudflare_api_token is defined %}
+  certbot-cloudflare:
+    image: certbot/dns-cloudflare:latest
+    container_name: cas-certbot-cloudflare
+    volumes:
+      - {{ nginx_directory }}/certbot/www/:/var/www/certbot/:rw
+      - {{ nginx_directory }}/certbot/conf/:/etc/letsencrypt/:rw
+      - {{ nginx_directory }}/.secrets/:/etc/letsencrypt/.secrets/:ro
     networks:
       - cas-network
 {% endif %}

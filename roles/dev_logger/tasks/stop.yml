@@ -1,18 +1,12 @@
-- name: Stopping Gitlab
+- name: Stopping Dev Logger
   become: true
   ignore_errors: true
   community.docker.docker_compose_v2:
-    project_src: "{{ gitlab_directory }}"
+    project_src: "{{ dev_logger_directory }}/docker"
     state: absent
 
 - name: Delete nginx conf
   ansible.builtin.import_tasks:
     file: utilities/delete_nginx_conf.yml
   vars:
-    label: "gitlab"
-
-- name: Remove backup cron job
-  become: true
-  ansible.builtin.cron:
-    name: "Gitlab backup"
-    state: absent
+    label: "dev-logger"

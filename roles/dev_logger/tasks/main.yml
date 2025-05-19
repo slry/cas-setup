@@ -1,0 +1,109 @@
+- name: Create Dev Logger directory
+  become: true
+  file:
+    path: "{{ dev_logger_directory }}"
+    state: directory
+    mode: '0770'
+
+- name: Clone repository
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/slry/dev-logger
+    dest: "{{ dev_logger_directory }}"
+    update: false
+
+- name: Retrieve JWT secret
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ dev_logger_directory }}"
+    secret_name: "jwt-secret.txt"
+    create_if_missing: True
+    output_var: "jwt_secret"
+
+- name: Generate Anon key
+  import_role:
+    name: jwt_generator
+  vars:
+    jwt_secret: "{{ jwt_secret }}"
+    jwt_header:
+      alg: HS256
+      typ: JWT
+    jwt_payload:
+      role: "anon"
+      iss: "supabase"
+      exp: "{{ (ansible_date_time.epoch | int) + 31536000 }}"
+      iat: "{{ ansible_date_time.epoch | int }}"
+    output_var: "anon_key"
+
+- name: Generate Service key
+  import_role:
+    name: jwt_generator
+  vars:
+    jwt_secret: "{{ jwt_secret }}"
+    jwt_header:
+      alg: HS256
+      typ: JWT
+    jwt_payload:
+      role: "service_role"
+      iss: "supabase"
+      exp: "{{ (ansible_date_time.epoch | int) + 31536000 }}"
+      iat: "{{ ansible_date_time.epoch | int }}"
+    output_var: "service_role_key"
+
+- name: Retrieve dashboard password
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ dev_logger_directory }}"
+    secret_name: "dashboard-password.txt"
+    create_if_missing: True
+    output_var: "dashboard_password"
+
+- name: Retrieve database password
+  ansible.builtin.import_tasks:
+    file: utilities/read_secret.yml
+  vars:
+    service_directory: "{{ dev_logger_directory }}"
+    secret_name: "db-password.txt"
+    create_if_missing: True
+    output_var: "db_password"
+
+- name: Copy .env Supabase file
+  become: true
+  template:
+    src: .env.supabase.j2
+    dest: "{{ dev_logger_directory }}/docker/.env"
+    mode: '0770'
+  register: env_supabase_file
+
+- name: Copy .env Next file
+  become: true
+  template:
+    src: .env.next.j2
+    dest: "{{ dev_logger_directory }}/.env"
+    mode: '0770'
+  register: env_next_file
+
+- name: Start Supabase container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.supabase.yml.j2"
+    service_directory: "{{ dev_logger_directory }}/docker"
+    build: 'always'
+
+- name: Start Next container
+  ansible.builtin.import_tasks:
+    file: utilities/start_container.yml
+  vars:
+    docker_compose_src_path: "docker-compose.next.yml.j2"
+    service_directory: "{{ dev_logger_directory }}"
+    build: 'always'
+
+- name: Copy nginx configuration
+  ansible.builtin.import_tasks:
+    file: utilities/add_nginx_conf.yml
+  vars:
+    conf_src_path: "nginx.conf.j2"
+    label: "dev-logger"

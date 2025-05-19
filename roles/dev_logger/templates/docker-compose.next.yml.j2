@@ -1,0 +1,22 @@
+name: next
+
+services:
+  dev-logger-app:
+    container_name: dev-logger-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      GITLAB_HOST: ${GITLAB_HOST}
+    networks:
+      - cas-network
+
+networks:
+  cas-network:
+    external: true
+    name: {{ docker_network }}

@@ -1,0 +1,34 @@
+#
+# Generates a JWT token using the provided secret key and payload.
+#
+# Input variables:
+#   secret_key     The secret key used to sign the JWT token
+#   payload        The payload to be included in the JWT token
+#   output_var    The name of the variable to store the generated JWT token
+
+# tasks/generate_jwt.yml
+- name: Encode JWT header
+  set_fact:
+    jwt_header_b64: "{{ jwt_header | to_json | b64encode | replace('+','-') | replace('/','_') | regex_replace('=+$', '') }}"
+
+- name: Encode JWT payload
+  set_fact:
+    jwt_payload_b64: "{{ jwt_payload | to_json | b64encode | replace('+','-') | replace('/','_') | regex_replace('=+$', '') }}"
+
+- name: Create JWT signing input
+  set_fact:
+    jwt_unsigned: "{{ jwt_header_b64 }}.{{ jwt_payload_b64 }}"
+
+- name: Generate HMAC SHA256 signature using openssl
+  shell: |
+    echo -n "{{ jwt_unsigned }}" | openssl dgst -sha256 -hmac "{{ jwt_secret }}" -binary | base64
+  register: raw_signature
+  changed_when: false
+
+- name: Encode signature in base64url format
+  set_fact:
+    jwt_signature_b64: "{{ raw_signature.stdout | trim | replace('+','-') | replace('/','_') | regex_replace('=+$', '') }}"
+
+- name: Set final JWT to dynamic output variable
+  set_fact:
+    "{{ output_var }}": "{{ jwt_unsigned }}.{{ jwt_signature_b64 }}"

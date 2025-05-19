@@ -51,7 +51,7 @@
     service_to_copy_image: "sonarqube.svg"
     service_url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}"
     unified_dashboard_url: "{{ schema }}://{{ domain }}{{ sonarqube_path }}/sessions/init/gitlab?return_to=%2Fsonarqube%2F"
-  
+
 - name: Logger
   when: ("logger" in install) and install["logger"]
   import_tasks:
@@ -71,3 +71,13 @@
     service_to_copy_image: "git_dashboard.png"
     service_url: "{{ schema }}://{{ domain }}{{ git_dashboard_path }}"
     unified_dashboard_url: "{{ schema }}://{{ domain }}{{ git_dashboard_path }}/api/gitlab"
+
+- name: Supabase
+  when: ("dev_logger" in install) and install["dev_logger"]
+  import_tasks:
+    file: utilities/set_service.yml
+  vars:
+    service_label: "Supabase"
+    service_to_copy_image: "dev_logger.png"
+    service_url: "{{ schema }}://{{ dev_logger_supabase_subdomain }}.{{ domain }}"
+    unified_dashboard_url: "{{ schema }}://{{ dev_logger_supabase_subdomain }}.{{ domain }}"
